@@ -1,0 +1,40 @@
+.draftTitle {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.listItem {
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.draftSidebarWrapper {
+  padding: 0px !important;
+  border: 1px solid black;
+  width: 20%;
+}
+
+.headerWrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltipText {
+  position: absolute;
+  padding: 5px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.draftPreviewWrapper, .editDraftWrapper {
+  width: 80%;
+}

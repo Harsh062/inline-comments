@@ -7,12 +7,18 @@ export const updateDraft = (draftId, mutatedDraftContent) => {
       allDrafts[dId].draftContent = mutatedDraftContent;
     }
   }
-  localStorage.setItem("drafts", JSON.stringify(allDrafts));
+  if(typeof window !== "undefined") {
+    localStorage.setItem("drafts", JSON.stringify(allDrafts));
+  }
 }
 
 export const getAllDrafts = () => {
-  console.log(JSON.parse(localStorage.getItem("drafts")));
-  return JSON.parse(localStorage.getItem("drafts"));
+  if(typeof window !== 'undefined') {
+    console.log(JSON.parse(localStorage.getItem("drafts")));
+    return JSON.parse(localStorage.getItem("drafts"));
+  } else {
+    
+  }
 }
 
 export const getDraftById = (draftId) => {
@@ -41,18 +47,25 @@ export const addCommentToThread = (commentThreadId, comment) => {
     currCommentThreadsObj[commentThreadId] = [];
   }
   currCommentThreadsObj[commentThreadId].push(commentId);
-  localStorage.setItem("commentsThreadObj", JSON.stringify(currCommentThreadsObj));
+ 
   currCommentsObj[commentId] = {
     ...comment
   };
-  localStorage.setItem("comments", JSON.stringify(currCommentsObj));
+  if(typeof window !== 'undefined') {
+    localStorage.setItem("commentsThreadObj", JSON.stringify(currCommentThreadsObj));
+    localStorage.setItem("comments", JSON.stringify(currCommentsObj));
+  }
 }
 
 const getCommentDetailsById = (commentId) => {
-  return { 
-    ...JSON.parse(localStorage.getItem("comments"))[commentId],
-    commentId
-  };
+  if(typeof window !== 'undefined') {
+    return { 
+      ...JSON.parse(localStorage.getItem("comments"))[commentId],
+      commentId
+    };
+  }
+  return {};
+  
 }
 
 export const getCommentsForThreadId = (commentThreadId) => {
@@ -65,19 +78,19 @@ export const getCommentsForThreadId = (commentThreadId) => {
 }
 
 const getCurrCommentsThreadObj = () => {
-  return JSON.parse(localStorage.getItem("commentsThreadObj")) ? JSON.parse(localStorage.getItem("commentsThreadObj")): {};
+  return typeof window !== 'undefined' && JSON.parse(localStorage.getItem("commentsThreadObj")) ? JSON.parse(localStorage.getItem("commentsThreadObj")): {};
 }
 
 const getCurrCommentsObj = () => {
-  return JSON.parse(localStorage.getItem("comments")) ? JSON.parse(localStorage.getItem("comments")): {};
+  return  typeof window !== 'undefined' && JSON.parse(localStorage.getItem("comments")) ? JSON.parse(localStorage.getItem("comments")): {};
 }
 
 const getCommentIdsForCommentThreadId = (commentThreadId) => {
-  return JSON.parse(localStorage.getItem("commentsThreadObj")) ? JSON.parse(localStorage.getItem("commentsThreadObj"))[commentThreadId] : null;
+  return  typeof window !== 'undefined' && JSON.parse(localStorage.getItem("commentsThreadObj")) ? JSON.parse(localStorage.getItem("commentsThreadObj"))[commentThreadId] : null;
 }
 
 const comments = {};
-if(!localStorage.getItem("drafts")) {
+if(typeof window !== 'undefined' && !localStorage.getItem("drafts")) {
   const drafts = {
     33242342342: {
       draftTitle: "First Post",

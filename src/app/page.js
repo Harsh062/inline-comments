@@ -18,9 +18,9 @@ export default function Home() {
   const [showAddedComments, setShowAddedComments] = useState(false);
   const [addedCommentsList, setAddedCommentsList] = useState([]);
   const [drafts, setDrafts] = useState([]);
-  const [selected, setSelected] = useState(null);
   const [activeCommentThreadId, setActiveCommentThreadId] = useState(null);
   const [activeDraft, setActiveDraft] = useState(null);
+  const [activeDraftId, setActiveDraftId] = useState(null);
   const [mutatedDraftContentToBeUpdated, setMutatedDraftContentToBeUpdated] = useState('');
   const [editDraftMode, setEditDraftMode] = useState(false);
   const [showAddCommentCard, setShowAddCommentCard] = useState(false);
@@ -46,19 +46,13 @@ export default function Home() {
       renderDraftContent(draftsList[0]);
       setLoading(false);
     }, 1000);
-
-    document.addEventListener("selectionchange", selectionChangeHandler);
-    
-    return () => {
-      document.removeEventListener("onselectionchange", selectionChangeHandler);
-    };
   }, []);
 
-  // setTimeout(() => {
-  //   addEventListenerForHighlightedText();
-  //   setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
-  //   loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
-  // }, 3000);
+  setTimeout(() => {
+    addEventListenerForHighlightedText();
+    //setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
+    //loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
+  }, 3000);
 
   const addEventListenerForHighlightedText = () => {
      // Get all elements with the custom attribute
@@ -71,12 +65,14 @@ export default function Home() {
  
      // Event handler function for the click event
      function handleCustomAttributeClick(event) {
-       const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
-       console.log('Clicked element with custom attribute:', customAttributeValue);
+      event.stopPropagation()
+      const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
+      console.log('Clicked element with custom attribute:', customAttributeValue);
      }
   }
 
   const renderDraftContent = (draft) => {
+    setActiveDraftId(draft.draftId);
     setActiveDraft(draft);
     convertMarkdownToEditableHTML(draft.draftContent);
 
@@ -117,44 +113,6 @@ export default function Home() {
      setEditedHtml(editedHtml);
   };
 
-  const updateSelection = async ({text, selection, range}) => {
-    console.log("Selected text: ", text, selection, range);
-    setSelected(selection);
-    // if no current selection render nothing
-    if (
-      !selection ||
-      !selection.text ||
-      !selection.text.length ||
-      selection.text.length < 1
-    ) {
-      return null
-    }
-    //dispatch({ type: "UPDATE_SELECTION", payload: { selection } });
-  };
-
-  const clearSelection = () => {
-    //dispatch({ type: "UPDATE_SELECTION", payload: { selection: null } });
-  };
-
-  const selectionChangeHandler = (e) => {
-    const selection = document.getSelection();
-    const text = selection.toString();
-    if (!selection || selection.isCollapsed || selection.rangeCount <= 0) {
-      clearSelection();
-    }
-    const range = selection.getRangeAt(0);
-
-    if (
-      range &&
-      range.startContainer.parentElement == range.endContainer.parentElement &&
-      range.cloneContents().childElementCount === 0
-    ) {
-      updateSelection({text, selection, range});
-    } else {
-      updateSelection(null);
-    }
-  };
-
   const handleAddCommentClick = () => {
     console.log("Add comment button clicked");
     setShowAddCommentCard(true);
@@ -177,6 +135,11 @@ export default function Home() {
     const addedCommentsList = getCommentsForThreadId(activeCommentThreadId);
     setShowAddedComments(true);
     setAddedCommentsList(addedCommentsList);
+    renderDraftContent({
+      ...activeDraft,
+      draftContent: mutatedDraftContentToBeUpdated
+    });
+    
   }
 
   const handleSaveSubsequentCommentClick = () => {
@@ -210,11 +173,14 @@ export default function Home() {
     console.log("Comment text changed: ", e.target.value);
   }
 
+  const handleCloseCommentsListClick = () => {
+    setShowAddedComments(false);
+  }
+
   const handleSelection = () => {
     const selection = document.getSelection();
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
-    console.log("rangestartoffset: ", range.startOffset, " rangeendoffset: ", range.endOffset, " activeDraftContent: ", activeDraft.draftContent);
     const commentThreadId = generateCommentThreadId();
     const contentTobeReplaced = `:inline-highlighter[${selectedText}]comment-thread-id=##${commentThreadId}##`;
     setActiveCommentThreadId(commentThreadId);
@@ -232,8 +198,8 @@ export default function Home() {
       startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
       endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
     }
-    console.log("active draft content: ", activeDraft.draftContent);
     const mutatedDraftContent = activeDraft.draftContent.substring(0, startOffset) + contentTobeReplaced + activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1);
+    console.log("active draft content: ", activeDraft.draftContent);
     console.log("First part: ", activeDraft.draftContent.substring(0, startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1));
     console.log("consolidated string: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
@@ -255,7 +221,13 @@ export default function Home() {
           {!isLoading && 
             drafts.map((draft) => {
               return (
-                <ListGroup.Item className={styles.listItem} key={draft.draftId} onClick={() => renderDraftContent(draft)}>{draft.draftTitle}</ListGroup.Item>
+                <ListGroup.Item
+                  className={styles.listItem}
+                  key={draft.draftId}
+                  style={{
+                    backgroundColor: activeDraftId === draft.draftId ? 'aqua' : 'transparent',
+                  }}
+                  onClick={() => renderDraftContent(draft)}>{draft.draftTitle}</ListGroup.Item>
               );
             })}
         </div>
@@ -296,6 +268,15 @@ export default function Home() {
        </Card>
       }
       <div className={styles.addedCommentsWrapper}>
+        {!showAddCommentCard && showAddedComments && 
+        <div>
+          <Card>
+            <Card.Body className={styles.addedCommentsCardHeader}>
+              <Card.Title>Comments</Card.Title>
+              <CloseButton onClick={() => handleCloseCommentsListClick()}/>
+            </Card.Body>
+          </Card>
+        </div>}
       {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
             return(
             <>

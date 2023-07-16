@@ -13,6 +13,7 @@
   background-color: white;
   padding: 0px;
   position: relative;
+  height: 100vh;
 }
 
 .draftTitle {
@@ -43,7 +44,7 @@
   width: 20%;
 }
 
-.headerWrapper {
+.headerWrapper, .addedCommentsCardHeader {
   display: flex;
   justify-content: space-between;
 }

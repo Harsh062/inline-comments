@@ -1,16 +1,45 @@
+.pageBody {
+  background-color: beige;
+}
+
+.draftHeader {
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+  background-color: cadetblue;
+}
+
+.draftContainer {
+  background-color: white;
+  padding: 0px;
+  position: relative;
+}
+
 .draftTitle {
   font-size: 24px;
   font-weight: bold;
 }
 
+.addCommentWrapper, .addedCommentsWrapper {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: '18rem'
+}
+
+.draftContent {
+  margin-top: 10px;
+}
+
 .listItem {
   border: 1px solid black;
   cursor: pointer;
+  padding: 10px;
 }
 
 .draftSidebarWrapper {
   padding: 0px !important;
-  border: 1px solid black;
   width: 20%;
 }
 
@@ -22,7 +51,6 @@
 .tooltip {
   position: relative;
   display: inline-block;
-  cursor: pointer;
 }
 
 .tooltipText {
@@ -37,4 +65,5 @@
 
 .draftPreviewWrapper, .editDraftWrapper {
   width: 80%;
+  padding: 20px;
 }

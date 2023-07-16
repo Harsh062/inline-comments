@@ -29,6 +29,7 @@ export default function Home() {
   const [subsequentCommentText, setSubsequentCommentText] = useState('');
   const [editedHtml, setEditedHtml] = useState(null)
   useEffect(() => {
+    document.querySelector("body").classList.add(styles.pageBody);
     setLoading(true);
     // Fetch posts from backend asynchronously
     setTimeout(() => {
@@ -53,11 +54,11 @@ export default function Home() {
     };
   }, []);
 
-  setTimeout(() => {
-    addEventListenerForHighlightedText();
-    setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
-    loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
-  }, 3000);
+  // setTimeout(() => {
+  //   addEventListenerForHighlightedText();
+  //   setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
+  //   loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
+  // }, 3000);
 
   const addEventListenerForHighlightedText = () => {
      // Get all elements with the custom attribute
@@ -101,7 +102,7 @@ export default function Home() {
     while ((match = regex.exec(text))) {
       newText = newText.replace(
         match[0],
-        `<span style="background-color: yellow" data-comment-thread-id="${match[2]}">${match[1]}</span>`
+        `<span style="background-color: yellow; cursor: pointer" data-comment-thread-id="${match[2]}">${match[1]}</span>`
       );
     }
     return newText;
@@ -217,8 +218,23 @@ export default function Home() {
     const commentThreadId = generateCommentThreadId();
     const contentTobeReplaced = `:inline-highlighter[${selectedText}]comment-thread-id=##${commentThreadId}##`;
     setActiveCommentThreadId(commentThreadId);
-    const mutatedDraftContent = activeDraft.draftContent.substring(0, range.startOffset) + contentTobeReplaced + activeDraft.draftContent.substring(range.endOffset, activeDraft.draftContent.length-1);
-    console.log("First part: ", activeDraft.draftContent.substring(0, range.startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(range.endOffset, activeDraft.draftContent.length-1));
+    let startOffset;
+    let endOffset;
+    if(selection.focusNode.previousSibling === null) {
+      startOffset = selection.baseOffset;
+      endOffset = selection.extentOffset;
+    } else if(selection.focusNode.previousSibling.nodeName === "SPAN") {
+      const outerHTML = selection.focusNode.previousSibling.outerHTML;
+      const indexOfDataThreadAttr = outerHTML.indexOf('"comment-thread-');
+      const startIndex = indexOfDataThreadAttr + 1;
+      const endIndex = startIndex + 51;
+      const commentThreadIdSubstring = outerHTML.substring(startIndex, endIndex);
+      startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
+      endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
+    }
+    console.log("active draft content: ", activeDraft.draftContent);
+    const mutatedDraftContent = activeDraft.draftContent.substring(0, startOffset) + contentTobeReplaced + activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1);
+    console.log("First part: ", activeDraft.draftContent.substring(0, startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1));
     console.log("consolidated string: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
     if (selectedText !== '') {
@@ -230,10 +246,9 @@ export default function Home() {
 
 
   return (
-    <Container>
-       <Navbar expand="lg" className="bg-body-tertiary">
-        <Navbar.Brand href="#home">Your Drafts</Navbar.Brand>
-      </Navbar>
+    <Container className={styles.draftContainer}>
+      <div className={styles.draftHeader}>Your Drafts</div>
+    
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
         <div className={`${styles.draftSidebarWrapper}`}>
@@ -251,7 +266,7 @@ export default function Home() {
               <Button variant="primary" onClick={() => handleEditDraftClick()}>Edit</Button>
             </div>
             <div>
-              <div className={`draftContent ${styles.tooltip}`} onMouseUp={handleSelection}  dangerouslySetInnerHTML={{__html: editedHtml}}/>
+              <div className={`${styles.draftContent} ${styles.tooltip}`} onMouseUp={handleSelection}  dangerouslySetInnerHTML={{__html: editedHtml}}/>
               {showAddCommentButton && <div className={styles.tooltipText} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>}
             </div>
           </div>}
@@ -267,7 +282,7 @@ export default function Home() {
            </div>}
       </div>
       {showAddCommentCard && !showAddedComments && !editDraftMode && 
-         <Card style={{ width: '18rem' }}>
+         <Card className={styles.addCommentWrapper} style={{ width: '18rem' }}>
           <Card.Body>
             <div className={styles.headerWrapper}>
               <Card.Title>Add a comment</Card.Title>
@@ -280,6 +295,7 @@ export default function Home() {
           </Card.Body>
        </Card>
       }
+      <div className={styles.addedCommentsWrapper}>
       {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
             return(
             <>
@@ -305,6 +321,7 @@ export default function Home() {
               </Card.Body>
           </Card>
           </div>}
+      </div>
     </Container>
   );
 }

@@ -50,15 +50,45 @@ export default function Home() {
     }, 1000);
   }, []);
 
+  const clearSelection = () => {
+    //dispatch({ type: "UPDATE_SELECTION", payload: { selection: null } });
+  };
+
+  const updateSelection = async (selection) => {
+    //dispatch({ type: "UPDATE_SELECTION", payload: { selection } });
+  };
+
+  const selectionChangeHandler = (e) => {
+    const selection = document.getSelection();
+    if (!selection || selection.isCollapsed || selection.rangeCount <= 0) {
+      clearSelection();
+    }
+    const range = selection.getRangeAt(0);
+
+    if (
+      range &&
+      range.startContainer.parentElement == range.endContainer.parentElement &&
+      range.cloneContents().childElementCount === 0
+    ) {
+      console.log("Child Does not have highlighted text");
+      updateSelection(selection);
+    } else {
+      console.log("Child has highlighed text already");
+      updateSelection(null);
+      setShowAddCommentButton(false);
+    }
+  };
+
   setTimeout(() => {
-    addEventListenerForHighlightedText();
+    !editDraftMode && addEventListenerForHighlightedText();
     //setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
     //loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
   }, 3000);
 
   const addEventListenerForHighlightedText = () => {
      // Get all elements with the custom attribute
-     const elements = document.querySelectorAll('[data-comment-thread-id]');
+     const draftContentWrapper = document.getElementById("draftContent");
+     const elements = draftContentWrapper.querySelectorAll('[data-comment-thread-id]');
 
      // Add a click event listener to each element
      elements.forEach(element => {
@@ -74,7 +104,6 @@ export default function Home() {
  
      // Event handler function for the click event
      function handleCustomAttributeClick(event) {
-      //event.stopPropagation()
       const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
       console.log('Clicked element with custom attribute:', customAttributeValue);
       loadCommentsForHighlightedText(customAttributeValue);
@@ -218,10 +247,6 @@ export default function Home() {
     const markdown = replaceCommentsSpansWithHNCommentDirective(withNewLines);
     return markdown;
   };
-  
-  const handleDraftContentChange = () => {
-
-  }
 
   const handleFirstCommentTextChange = (e) => {
     setFirstCommentText(e.target.value);
@@ -237,11 +262,21 @@ export default function Home() {
     setShowAddedComments(false);
   }
 
-  const handleSelection = (event) => {
-    event.stopPropagation()
+  const handleSelectionChange = (event) => {
+      console.log(document.getSelection());
+  }
+
+  const handleMouseUpOverDraftContent = (event) => {
     const selection = document.getSelection();
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
+    if (selectedText === '' || (range &&
+      range.startContainer.parentElement == range.endContainer.parentElement &&
+      range.cloneContents().childElementCount > 0)
+    ){
+      setShowAddCommentButton(false);
+      return;
+    }
     const commentThreadId = generateCommentThreadId();
     const contentTobeReplaced = `:inline-highlighter[${selectedText}]{comment-thread-id=##${commentThreadId}##}`;
     setActiveCommentThreadId(commentThreadId);
@@ -264,11 +299,7 @@ export default function Home() {
     console.log("First part: ", activeDraft.draftContent.substring(0, startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1));
     console.log("consolidated string: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
-    if (selectedText !== '') {
-      setShowAddCommentButton(true);
-    } else {
-      setShowAddCommentButton(false);
-    }
+    setShowAddCommentButton(true);
   };
 
 
@@ -299,7 +330,7 @@ export default function Home() {
               <Button variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
             </div>
             <div>
-              <div className={`${styles.draftContent} ${styles.tooltip}`} onMouseUp={() => handleSelection(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
+              <div id="draftContent" className={`${styles.draftContent} ${styles.tooltip}`} onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
               {showAddCommentButton && <div className={styles.tooltipText} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>}
             </div>
           </div>}

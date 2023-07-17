@@ -30,11 +30,11 @@ export const getDraftById = (draftId) => {
 }
 
 export const generateCommentThreadId = () => {
-  return `comment-thread-${uuidv4()}`;
+  return `ct-${uuidv4()}`;
 }
 
 export const generateCommentId = () => {
-  return `comment-${uuidv4()}`;
+  return `c-${uuidv4()}`;
 }
 
 export const addCommentToThread = (commentThreadId, comment) => {

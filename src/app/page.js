@@ -1,7 +1,7 @@
 "use client"; // This is a client component 👈🏽
 import React, { useEffect, useState, useRef } from "react";
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
-import Navbar from 'react-bootstrap/Navbar';
+import sanitizeHtml from "sanitize-html";
 import Container from 'react-bootstrap/Container';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
@@ -14,6 +14,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
 
 export default function Home() {
+  const editorRef = useRef();
   const [isLoading, setLoading]  = useState(false);
   const [showAddedComments, setShowAddedComments] = useState(false);
   const [addedCommentsList, setAddedCommentsList] = useState([]);
@@ -27,7 +28,8 @@ export default function Home() {
   const [showAddCommentButton, setShowAddCommentButton] = useState(false);
   const [firstCommentText, setFirstCommentText] = useState('');
   const [subsequentCommentText, setSubsequentCommentText] = useState('');
-  const [editedHtml, setEditedHtml] = useState(null)
+  const [previewHtml, setPreviewHtml] = useState(null);
+  const [editableHtml, setEditableHtml] = useState(null)
   useEffect(() => {
     document.querySelector("body").classList.add(styles.pageBody);
     setLoading(true);
@@ -62,20 +64,28 @@ export default function Home() {
      elements.forEach(element => {
        element.addEventListener('click', handleCustomAttributeClick);
      });
+
+     // Since we want to block the mouseup event attached to the draft content
+     elements.forEach(element => {
+      element.addEventListener('mouseup', function(event) {
+        event.stopPropagation();
+      });
+    });
  
      // Event handler function for the click event
      function handleCustomAttributeClick(event) {
-      event.stopPropagation()
+      //event.stopPropagation()
       const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
       console.log('Clicked element with custom attribute:', customAttributeValue);
+      loadCommentsForHighlightedText(customAttributeValue);
      }
   }
 
   const renderDraftContent = (draft) => {
     setActiveDraftId(draft.draftId);
     setActiveDraft(draft);
-    convertMarkdownToEditableHTML(draft.draftContent);
-
+    const previewHtml = convertMarkdownToHTML(draft.draftContent, false);
+    setPreviewHtml(previewHtml);
   }
 
   const convertTextToHtml = (text) => {
@@ -90,27 +100,30 @@ export default function Home() {
     setAddedCommentsList(addedCommentsList);
   }
   
-  const addSpansToHighlightedText = (text) => {
+  const addSpansToHighlightedText = (text, editable) => {
     const regex =
-      /:inline-highlighter\[(.*?)\]comment-thread-id=##(.*?)##/g;
+      /:inline-highlighter\[(.*?)\]{comment-thread-id=##(.*?)##}/g;
     let match;
     let newText = text;
+    let spanStr;
     while ((match = regex.exec(text))) {
-      newText = newText.replace(
-        match[0],
-        `<span style="background-color: yellow; cursor: pointer" data-comment-thread-id="${match[2]}">${match[1]}</span>`
-      );
+      if(editable === false) {
+        spanStr = `<span style="background-color: yellow; cursor: pointer" data-comment-thread-id="${match[2]}">${match[1]}</span>`;
+      } else {
+        spanStr = `<span data-comment-thread-id="${match[2]}">${match[1]}</span>`;
+      }
+      newText = newText.replace(match[0],spanStr);
     }
     return newText;
   };
   
-  const convertMarkdownToEditableHTML = (markDownText) => {
+  const convertMarkdownToHTML = (markDownText, editable) => {
     const markdownAsHtmlWithCommentSpans =
-    addSpansToHighlightedText(markDownText);
+    addSpansToHighlightedText(markDownText, editable);
       console.log("markdownAsHtmlWithCommentSpans: ", markdownAsHtmlWithCommentSpans);
-    const editedHtml = convertTextToHtml(markdownAsHtmlWithCommentSpans);
-    console.log("editedHtml: ", editedHtml);
-     setEditedHtml(editedHtml);
+    const transformedHtml = convertTextToHtml(markdownAsHtmlWithCommentSpans);
+    console.log("transformedHtml: ", transformedHtml);
+     return transformedHtml;
   };
 
   const handleAddCommentClick = () => {
@@ -151,13 +164,60 @@ export default function Home() {
     setAddedCommentsList(addedCommentsList);
   }
 
-  const handleEditDraftClick = () => {
+  const handleEditDraftClick = (draft) => {
+    const editableHtml = convertMarkdownToHTML(draft.draftContent, true);
+    setEditableHtml(editableHtml);
     setEditDraftMode(true);
   }
 
   const handleSaveDraftClick = () => {
+    const html = editorRef.current.innerHTML;
+    const markdown = convertEditableHTMLToMarkdown(html);
+    console.log("Transformed Markdown: ", markdown);
+    setMutatedDraftContentToBeUpdated(markdown);
+    // First save the mutated draft content, then add comment details to threadId
+    updateDraft(activeDraft.draftId, markdown);
+    renderDraftContent({
+      ...activeDraft,
+      draftContent: markdown
+    });
     setEditDraftMode(false);
   }
+
+  const replaceCommentsSpansWithHNCommentDirective = (text) => {
+    const regex = /<span data-comment-thread-id="(.*)">(.*?)<\/span>/g;
+    let match;
+    let newText = text;
+    while ((match = regex.exec(text))) {
+      newText = newText.replace(
+        match[0],
+        `:inline-highlighter[${match[2]}]{comment-thread-id=##${match[1]}##}`
+      );
+    }
+    return newText;
+  };
+  
+  const replaceBrWithNewLine = (text) => {
+    const regex = /<br\s?\/?>/g;
+    let match;
+    let newText = text;
+    while ((match = regex.exec(text))) {
+      newText = newText.replace(match[0], "\n");
+    }
+    return newText;
+  };
+  
+  const convertEditableHTMLToMarkdown = (editableHtml) => {
+    const sanitized = sanitizeHtml(editableHtml, {
+      allowedTags: ["br", "span"],
+      allowedAttributes: {
+        span: ["data-comment-thread-id"],
+      },
+    });
+    const withNewLines = replaceBrWithNewLine(sanitized);
+    const markdown = replaceCommentsSpansWithHNCommentDirective(withNewLines);
+    return markdown;
+  };
   
   const handleDraftContentChange = () => {
 
@@ -177,12 +237,13 @@ export default function Home() {
     setShowAddedComments(false);
   }
 
-  const handleSelection = () => {
+  const handleSelection = (event) => {
+    event.stopPropagation()
     const selection = document.getSelection();
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
     const commentThreadId = generateCommentThreadId();
-    const contentTobeReplaced = `:inline-highlighter[${selectedText}]comment-thread-id=##${commentThreadId}##`;
+    const contentTobeReplaced = `:inline-highlighter[${selectedText}]{comment-thread-id=##${commentThreadId}##}`;
     setActiveCommentThreadId(commentThreadId);
     let startOffset;
     let endOffset;
@@ -191,12 +252,12 @@ export default function Home() {
       endOffset = selection.extentOffset;
     } else if(selection.focusNode.previousSibling.nodeName === "SPAN") {
       const outerHTML = selection.focusNode.previousSibling.outerHTML;
-      const indexOfDataThreadAttr = outerHTML.indexOf('"comment-thread-');
+      const indexOfDataThreadAttr = outerHTML.indexOf('"ct-');
       const startIndex = indexOfDataThreadAttr + 1;
-      const endIndex = startIndex + 51;
+      const endIndex = startIndex + 39;
       const commentThreadIdSubstring = outerHTML.substring(startIndex, endIndex);
-      startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
-      endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 51 + 2;
+      startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 39 + 3;
+      endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 39 + 3;
     }
     const mutatedDraftContent = activeDraft.draftContent.substring(0, startOffset) + contentTobeReplaced + activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1);
     console.log("active draft content: ", activeDraft.draftContent);
@@ -235,10 +296,10 @@ export default function Home() {
           <div className={styles.draftPreviewWrapper}>
             <div className={styles.headerWrapper}>
               <div className={styles.draftTitle}>{activeDraft.draftTitle}</div>
-              <Button variant="primary" onClick={() => handleEditDraftClick()}>Edit</Button>
+              <Button variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
             </div>
             <div>
-              <div className={`${styles.draftContent} ${styles.tooltip}`} onMouseUp={handleSelection}  dangerouslySetInnerHTML={{__html: editedHtml}}/>
+              <div className={`${styles.draftContent} ${styles.tooltip}`} onMouseUp={() => handleSelection(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
               {showAddCommentButton && <div className={styles.tooltipText} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>}
             </div>
           </div>}
@@ -249,7 +310,7 @@ export default function Home() {
                 <Button variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
               </div>
               <Form.Group controlId="exampleForm.ControlTextarea1">
-                <Form.Control as="textarea" value={activeDraft.draftContent} onChange={() => handleDraftContentChange()} rows={3} placeholder="Type your comments here..." />
+                <div  ref={editorRef} contentEditable="true"  dangerouslySetInnerHTML={{__html: editableHtml}}/>
               </Form.Group>
            </div>}
       </div>

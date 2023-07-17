@@ -1,7 +1,6 @@
 "use client"; // This is a client component 👈🏽
 import React, { useEffect, useState, useRef } from "react";
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
-import sanitizeHtml from "sanitize-html";
 import Container from 'react-bootstrap/Container';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
@@ -11,6 +10,7 @@ import CloseButton from 'react-bootstrap/CloseButton';
 
 import styles from './globals.module.css';
 import LoadingSpinner from "./LoadingSpinner";
+import { convertMarkdownToHTML, convertEditableHTMLToMarkdown } from "../utils/utils";
 import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
 
 export default function Home() {
@@ -50,39 +50,8 @@ export default function Home() {
     }, 1000);
   }, []);
 
-  const clearSelection = () => {
-    //dispatch({ type: "UPDATE_SELECTION", payload: { selection: null } });
-  };
-
-  const updateSelection = async (selection) => {
-    //dispatch({ type: "UPDATE_SELECTION", payload: { selection } });
-  };
-
-  const selectionChangeHandler = (e) => {
-    const selection = document.getSelection();
-    if (!selection || selection.isCollapsed || selection.rangeCount <= 0) {
-      clearSelection();
-    }
-    const range = selection.getRangeAt(0);
-
-    if (
-      range &&
-      range.startContainer.parentElement == range.endContainer.parentElement &&
-      range.cloneContents().childElementCount === 0
-    ) {
-      console.log("Child Does not have highlighted text");
-      updateSelection(selection);
-    } else {
-      console.log("Child has highlighed text already");
-      updateSelection(null);
-      setShowAddCommentButton(false);
-    }
-  };
-
   setTimeout(() => {
     !editDraftMode && addEventListenerForHighlightedText();
-    //setActiveCommentThreadId("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
-    //loadCommentsForHighlightedText("comment-thread-72d99ebb-85e5-4c97-9e7e-e675f160732e");
   }, 3000);
 
   const addEventListenerForHighlightedText = () => {
@@ -98,6 +67,7 @@ export default function Home() {
      // Since we want to block the mouseup event attached to the draft content
      elements.forEach(element => {
       element.addEventListener('mouseup', function(event) {
+        console.log("Inside span click");
         event.stopPropagation();
       });
     });
@@ -117,43 +87,12 @@ export default function Home() {
     setPreviewHtml(previewHtml);
   }
 
-  const convertTextToHtml = (text) => {
-    const html = text.replace(/\n/g, "<br />");
-    return html;
-  };
-
   const loadCommentsForHighlightedText = (commentThreadId) => {
     console.log("commentThreadId: ", commentThreadId);
     const addedCommentsList = getCommentsForThreadId(commentThreadId);
     setShowAddedComments(true);
     setAddedCommentsList(addedCommentsList);
   }
-  
-  const addSpansToHighlightedText = (text, editable) => {
-    const regex =
-      /:inline-highlighter\[(.*?)\]{comment-thread-id=##(.*?)##}/g;
-    let match;
-    let newText = text;
-    let spanStr;
-    while ((match = regex.exec(text))) {
-      if(editable === false) {
-        spanStr = `<span style="background-color: yellow; cursor: pointer" data-comment-thread-id="${match[2]}">${match[1]}</span>`;
-      } else {
-        spanStr = `<span data-comment-thread-id="${match[2]}">${match[1]}</span>`;
-      }
-      newText = newText.replace(match[0],spanStr);
-    }
-    return newText;
-  };
-  
-  const convertMarkdownToHTML = (markDownText, editable) => {
-    const markdownAsHtmlWithCommentSpans =
-    addSpansToHighlightedText(markDownText, editable);
-      console.log("markdownAsHtmlWithCommentSpans: ", markdownAsHtmlWithCommentSpans);
-    const transformedHtml = convertTextToHtml(markdownAsHtmlWithCommentSpans);
-    console.log("transformedHtml: ", transformedHtml);
-     return transformedHtml;
-  };
 
   const handleAddCommentClick = () => {
     console.log("Add comment button clicked");
@@ -212,41 +151,6 @@ export default function Home() {
     });
     setEditDraftMode(false);
   }
-
-  const replaceCommentsSpansWithHNCommentDirective = (text) => {
-    const regex = /<span data-comment-thread-id="(.*)">(.*?)<\/span>/g;
-    let match;
-    let newText = text;
-    while ((match = regex.exec(text))) {
-      newText = newText.replace(
-        match[0],
-        `:inline-highlighter[${match[2]}]{comment-thread-id=##${match[1]}##}`
-      );
-    }
-    return newText;
-  };
-  
-  const replaceBrWithNewLine = (text) => {
-    const regex = /<br\s?\/?>/g;
-    let match;
-    let newText = text;
-    while ((match = regex.exec(text))) {
-      newText = newText.replace(match[0], "\n");
-    }
-    return newText;
-  };
-  
-  const convertEditableHTMLToMarkdown = (editableHtml) => {
-    const sanitized = sanitizeHtml(editableHtml, {
-      allowedTags: ["br", "span"],
-      allowedAttributes: {
-        span: ["data-comment-thread-id"],
-      },
-    });
-    const withNewLines = replaceBrWithNewLine(sanitized);
-    const markdown = replaceCommentsSpansWithHNCommentDirective(withNewLines);
-    return markdown;
-  };
 
   const handleFirstCommentTextChange = (e) => {
     setFirstCommentText(e.target.value);

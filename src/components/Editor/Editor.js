@@ -15,7 +15,7 @@ const Editor = ({ draftId, draftTitle, draftContent}) => {
                 <Form.Control as="textarea" rows={3}  value={draftContent}/>
             </Form.Group>
         </Form>
-        <div onClick={handleUpdateDraftClick}>
+        <div data-cy="saveDraftButton" onClick={handleUpdateDraftClick}>
             Save Draft
         </div>
         </div>

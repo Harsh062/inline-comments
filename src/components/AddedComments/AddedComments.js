@@ -13,7 +13,7 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
           <Card>
             <Card.Body className="addedCommentsCardHeader">
               <Card.Title>Comments</Card.Title>
-              <CloseButton onClick={() => handleCloseCommentsListClick()}/>
+              <CloseButton data-cy="closeCommentsButton" onClick={() => handleCloseCommentsListClick()}/>
             </Card.Body>
           </Card>
         </div>}
@@ -34,10 +34,10 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
             <Card style={{ width: '18rem' }}>
               <Card.Body>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-                  <Form.Control as="textarea" rows={3} placeholder="Reply" onChange={(e) => handleSubsequentCommentTextChange(e)} value={subsequentCommentText} />
+                  <Form.Control data-cy="addCommentsToThreadTextBox" as="textarea" rows={3} placeholder="Reply" onChange={(e) => handleSubsequentCommentTextChange(e)} value={subsequentCommentText} />
                 </Form.Group>
                 <div>
-                  <Button variant="primary" onClick={() => handleSaveSubsequentCommentClick()}>Save</Button>
+                  <Button data-cy="saveSubsequentCommentsButton" variant="primary" onClick={() => handleSaveSubsequentCommentClick()}>Save</Button>
                 </div>
               </Card.Body>
           </Card>

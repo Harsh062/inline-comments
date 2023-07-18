@@ -6,9 +6,9 @@ const DraftPreview = ({ activeDraft, handleEditDraftClick, handleSelectionChange
     <div className="draftPreviewWrapper">
         <div className="headerWrapper">
           <div className="draftTitle">{activeDraft.draftTitle}</div>
-          <Button variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
+          <Button data-cy="editDraftButton" variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
         </div>
-        <div id="draftContent" className="draftContent" onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
+        <div data-cy="previewHtmlDiv" id="draftContent" className="draftContent" onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
     </div>
     );
 };

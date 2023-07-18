@@ -9,6 +9,7 @@ const SideNav = ({ renderDraftContent, isLoading, drafts, activeDraftId}) => {
             return (
               <ListGroup.Item
                 className="listItem"
+                data-cy="draftHeaderListItem"
                 key={draft.draftId}
                 style={{
                   backgroundColor: activeDraftId === draft.draftId ? 'aqua' : 'transparent',

@@ -11,12 +11,12 @@ const AddComment = ({ handleCloseCommentCardClick, handleFirstCommentTextChange,
         <Card.Body>
           <div className="headerWrapper">
             <Card.Title>Add a comment</Card.Title>
-            <CloseButton onClick={() => handleCloseCommentCardClick(false)}/>
+            <CloseButton data-cy="closeCommentButton" onClick={() => handleCloseCommentCardClick(false)}/>
           </div>
           <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-            <Form.Control as="textarea" onChange={(e) => handleFirstCommentTextChange(e)} rows={3} placeholder="Type your comments here..." value={firstCommentText} />
+            <Form.Control data-cy="addCommentTextBox" as="textarea" onChange={(e) => handleFirstCommentTextChange(e)} rows={3} placeholder="Type your comments here..." value={firstCommentText} />
           </Form.Group>
-          <Button variant="primary" onClick={() => handleSaveFirstCommentClick()}>Save</Button>
+          <Button variant="primary" data-cy="saveFirstCommentButton" onClick={() => handleSaveFirstCommentClick()}>Save</Button>
         </Card.Body>
      </Card>
     );

@@ -7,10 +7,10 @@ const DraftEdit = ({ activeDraft, handleSaveDraftClick, editableHtml, editorRef}
     <div className="editDraftWrapper">
         <div className="headerWrapper">
           <div className="draftTitle">{activeDraft.draftTitle}</div>
-          <Button variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
+          <Button data-cy="saveDraftButton" variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
         </div>
         <Form.Group controlId="exampleForm.ControlTextarea1">
-          <div  ref={editorRef} contentEditable="true"  dangerouslySetInnerHTML={{__html: editableHtml}}/>
+          <div data-cy="editableHtmlDiv"  ref={editorRef} contentEditable="true"  dangerouslySetInnerHTML={{__html: editableHtml}}/>
         </Form.Group>
      </div>
     );

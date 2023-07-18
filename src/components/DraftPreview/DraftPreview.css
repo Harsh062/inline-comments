@@ -1,0 +1,28 @@
+.draftTitle {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .headerWrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .draftPreviewWrapper {
+    width: 80%;
+    padding: 20px;
+  }
+
+  .draftContent {
+    margin-top: 10px;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }

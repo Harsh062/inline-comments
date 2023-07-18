@@ -2,16 +2,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import Form from 'react-bootstrap/Form';
-import CloseButton from 'react-bootstrap/CloseButton';
 
 import styles from './globals.module.css';
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 import { convertMarkdownToHTML, convertEditableHTMLToMarkdown } from "../utils/utils";
 import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
 import SideNav from "@/components/SideNav/SideNav";
+import DraftPreview from "@/components/DraftPreview/DraftPreview";
+import DraftEdit from "@/components/DraftEdit/DraftEdit";
+import AddComment from "@/components/AddComment/AddComment";
+import AddedComments from "@/components/AddedComments/AddedComments";
 
 export default function Home() {
   const editorRef = useRef();
@@ -19,7 +19,6 @@ export default function Home() {
   const [showAddedComments, setShowAddedComments] = useState(false);
   const [addedCommentsList, setAddedCommentsList] = useState([]);
   const [drafts, setDrafts] = useState([]);
-  const [tooltipStyle, setTooltipStyle] = useState({});
   const [activeCommentThreadId, setActiveCommentThreadId] = useState(null);
   const [activeDraft, setActiveDraft] = useState(null);
   const [activeDraftId, setActiveDraftId] = useState(null);
@@ -47,7 +46,7 @@ export default function Home() {
       setDrafts(draftsList);
       renderDraftContent(draftsList[0]);
       setLoading(false);
-    }, 1000);
+    }, 500);
   }, []);
 
   setTimeout(() => {
@@ -217,8 +216,8 @@ export default function Home() {
     console.log("range: ", range);
     const position = document.documentElement.scrollTop || document.body.scrollTop;
     const tooltip = document.getElementById('tooltip');
-    tooltip.style.left = `${position + rect.left - 2*rect.width}px`;
-    tooltip.style.top = `${position + rect.top - rect.height - 10}px`;
+    tooltip.style.left = `${position + rect.left}px`;
+    tooltip.style.top = `${position + rect.top}px`;
     handleTooltipVisibility(true);
   };
 
@@ -230,77 +229,34 @@ export default function Home() {
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
         <SideNav renderDraftContent={renderDraftContent} isLoading={isLoading} drafts={drafts} activeDraftId={activeDraftId}/>
-        {activeDraft && !editDraftMode &&
-          <div className={styles.draftPreviewWrapper}>
-            <div className={styles.headerWrapper}>
-              <div className={styles.draftTitle}>{activeDraft.draftTitle}</div>
-              <Button variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
-            </div>
-            <div>
-              <div id="draftContent" className={`${styles.draftContent} ${styles.tooltip}`} onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
-            </div>
-          </div>}
+        {
+        activeDraft && !editDraftMode &&
+        <DraftPreview  activeDraft={activeDraft}
+            handleEditDraftClick={handleEditDraftClick} 
+            handleSelectionChange={handleSelectionChange} 
+            handleMouseUpOverDraftContent={handleMouseUpOverDraftContent} 
+            previewHtml={previewHtml}/>
+          }
           {editDraftMode &&
-             <div className={styles.editDraftWrapper}>
-              <div className={styles.headerWrapper}>
-                <div className={styles.draftTitle}>{activeDraft.draftTitle}</div>
-                <Button variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
-              </div>
-              <Form.Group controlId="exampleForm.ControlTextarea1">
-                <div  ref={editorRef} contentEditable="true"  dangerouslySetInnerHTML={{__html: editableHtml}}/>
-              </Form.Group>
-           </div>}
+        <DraftEdit  activeDraft={activeDraft}
+          handleSaveDraftClick={handleSaveDraftClick} 
+          editableHtml={editableHtml} 
+          editorRef={editorRef}/>
+          }
       </div>
       {showAddCommentCard && !showAddedComments && !editDraftMode && 
-         <Card className={styles.addCommentWrapper} style={{ width: '18rem' }}>
-          <Card.Body>
-            <div className={styles.headerWrapper}>
-              <Card.Title>Add a comment</Card.Title>
-              <CloseButton onClick={() => handleCloseCommentCardClick(false)}/>
-            </div>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-              <Form.Control as="textarea" onChange={(e) => handleFirstCommentTextChange(e)} rows={3} placeholder="Type your comments here..." value={firstCommentText} />
-            </Form.Group>
-            <Button variant="primary" onClick={() => handleSaveFirstCommentClick()}>Save</Button>
-          </Card.Body>
-       </Card>
+        <AddComment handleCloseCommentCardClick={handleCloseCommentCardClick}
+        handleFirstCommentTextChange={handleFirstCommentTextChange}
+        firstCommentText={firstCommentText}
+        handleSaveFirstCommentClick={handleSaveFirstCommentClick}/>
       }
-      <div className={styles.addedCommentsWrapper}>
-        {!showAddCommentCard && showAddedComments && 
-        <div>
-          <Card>
-            <Card.Body className={styles.addedCommentsCardHeader}>
-              <Card.Title>Comments</Card.Title>
-              <CloseButton onClick={() => handleCloseCommentsListClick()}/>
-            </Card.Body>
-          </Card>
-        </div>}
-      {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
-            return(
-            <>
-              <Card key={comment.commentId}>
-                <Card.Body>
-                  <Card.Text>{comment.commentText}</Card.Text>
-                </Card.Body>
-              </Card>
-            </>
-            )
-          })
-        }
-        {!showAddCommentCard && showAddedComments &&
-          <div>
-            <Card style={{ width: '18rem' }}>
-              <Card.Body>
-                <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-                  <Form.Control as="textarea" rows={3} placeholder="Reply" onChange={(e) => handleSubsequentCommentTextChange(e)} value={subsequentCommentText} />
-                </Form.Group>
-                <div>
-                  <Button variant="primary" onClick={() => handleSaveSubsequentCommentClick()}>Save</Button>
-                </div>
-              </Card.Body>
-          </Card>
-          </div>}
-      </div>
+      <AddedComments handleCloseCommentsListClick={handleCloseCommentsListClick}
+        showAddCommentCard={showAddCommentCard}
+        showAddedComments={showAddedComments}
+        addedCommentsList={addedCommentsList}
+        handleSubsequentCommentTextChange={handleSubsequentCommentTextChange}
+        handleSaveSubsequentCommentClick={handleSaveSubsequentCommentClick}
+        subsequentCommentText={subsequentCommentText} />
     </Container>
   );
 }

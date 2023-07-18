@@ -1,0 +1,14 @@
+.editDraftWrapper {
+    width: 80%;
+    padding: 20px;
+  }
+
+  .headerWrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .draftTitle {
+    font-size: 24px;
+    font-weight: bold;
+  }

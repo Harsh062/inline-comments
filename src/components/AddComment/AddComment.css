@@ -1,0 +1,12 @@
+.addCommentWrapper {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: '18rem'
+  }
+
+  .headerWrapper {
+    display: flex;
+    justify-content: space-between;
+  }

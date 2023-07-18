@@ -35,6 +35,8 @@
 
 .draftContent {
   margin-top: 10px;
+  position: relative;
+  display: inline-block;
 }
 
 .listItem {
@@ -46,11 +48,6 @@
 .headerWrapper, .addedCommentsCardHeader {
   display: flex;
   justify-content: space-between;
-}
-
-.tooltip {
-  position: relative;
-  display: inline-block;
 }
 
 .tooltipText {

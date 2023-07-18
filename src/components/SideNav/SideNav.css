@@ -1,0 +1,10 @@
+.draftSidebarWrapper {
+    padding: 0px !important;
+    width: 20%;
+}
+
+.listItem {
+    border: 1px solid black;
+    cursor: pointer;
+    padding: 10px;
+}

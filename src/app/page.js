@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
 import Container from 'react-bootstrap/Container';
-import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
@@ -12,6 +11,7 @@ import styles from './globals.module.css';
 import LoadingSpinner from "./LoadingSpinner";
 import { convertMarkdownToHTML, convertEditableHTMLToMarkdown } from "../utils/utils";
 import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
+import SideNav from "@/components/SideNav/SideNav";
 
 export default function Home() {
   const editorRef = useRef();
@@ -19,13 +19,13 @@ export default function Home() {
   const [showAddedComments, setShowAddedComments] = useState(false);
   const [addedCommentsList, setAddedCommentsList] = useState([]);
   const [drafts, setDrafts] = useState([]);
+  const [tooltipStyle, setTooltipStyle] = useState({});
   const [activeCommentThreadId, setActiveCommentThreadId] = useState(null);
   const [activeDraft, setActiveDraft] = useState(null);
   const [activeDraftId, setActiveDraftId] = useState(null);
   const [mutatedDraftContentToBeUpdated, setMutatedDraftContentToBeUpdated] = useState('');
   const [editDraftMode, setEditDraftMode] = useState(false);
   const [showAddCommentCard, setShowAddCommentCard] = useState(false);
-  const [showAddCommentButton, setShowAddCommentButton] = useState(false);
   const [firstCommentText, setFirstCommentText] = useState('');
   const [subsequentCommentText, setSubsequentCommentText] = useState('');
   const [previewHtml, setPreviewHtml] = useState(null);
@@ -85,6 +85,7 @@ export default function Home() {
     setActiveDraft(draft);
     const previewHtml = convertMarkdownToHTML(draft.draftContent, false);
     setPreviewHtml(previewHtml);
+    handleTooltipVisibility(false);
   }
 
   const loadCommentsForHighlightedText = (commentThreadId) => {
@@ -97,7 +98,16 @@ export default function Home() {
   const handleAddCommentClick = () => {
     console.log("Add comment button clicked");
     setShowAddCommentCard(true);
-    setShowAddCommentButton(false);
+    handleTooltipVisibility(false);
+  }
+
+  const handleTooltipVisibility = (showTooltip) => {
+    const tooltip = document.getElementById('tooltip');
+    if(showTooltip) {
+      tooltip.style.display = 'block';
+    } else {
+      tooltip.style.display = 'none';
+    }
   }
 
   const handleCloseCommentCardClick = () => {
@@ -174,11 +184,12 @@ export default function Home() {
     const selection = document.getSelection();
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
     if (selectedText === '' || (range &&
       range.startContainer.parentElement == range.endContainer.parentElement &&
       range.cloneContents().childElementCount > 0)
     ){
-      setShowAddCommentButton(false);
+      handleTooltipVisibility(false);
       return;
     }
     const commentThreadId = generateCommentThreadId();
@@ -203,30 +214,22 @@ export default function Home() {
     console.log("First part: ", activeDraft.draftContent.substring(0, startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1));
     console.log("consolidated string: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
-    setShowAddCommentButton(true);
+    console.log("range: ", range);
+    const position = document.documentElement.scrollTop || document.body.scrollTop;
+    const tooltip = document.getElementById('tooltip');
+    tooltip.style.left = `${position + rect.left - 2*rect.width}px`;
+    tooltip.style.top = `${position + rect.top - rect.height - 10}px`;
+    handleTooltipVisibility(true);
   };
 
 
   return (
     <Container className={styles.draftContainer}>
       <div className={styles.draftHeader}>Your Drafts</div>
-    
+      <div id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
-        <div className={`${styles.draftSidebarWrapper}`}>
-          {!isLoading && 
-            drafts.map((draft) => {
-              return (
-                <ListGroup.Item
-                  className={styles.listItem}
-                  key={draft.draftId}
-                  style={{
-                    backgroundColor: activeDraftId === draft.draftId ? 'aqua' : 'transparent',
-                  }}
-                  onClick={() => renderDraftContent(draft)}>{draft.draftTitle}</ListGroup.Item>
-              );
-            })}
-        </div>
+        <SideNav renderDraftContent={renderDraftContent} isLoading={isLoading} drafts={drafts} activeDraftId={activeDraftId}/>
         {activeDraft && !editDraftMode &&
           <div className={styles.draftPreviewWrapper}>
             <div className={styles.headerWrapper}>
@@ -235,7 +238,6 @@ export default function Home() {
             </div>
             <div>
               <div id="draftContent" className={`${styles.draftContent} ${styles.tooltip}`} onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
-              {showAddCommentButton && <div className={styles.tooltipText} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>}
             </div>
           </div>}
           {editDraftMode &&

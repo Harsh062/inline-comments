@@ -2,6 +2,10 @@
   background-color: beige;
 }
 
+.hidden {
+  display: none;
+}
+
 .draftHeader {
   padding: 20px;
   text-align: center;
@@ -37,11 +41,6 @@
   border: 1px solid black;
   cursor: pointer;
   padding: 10px;
-}
-
-.draftSidebarWrapper {
-  padding: 0px !important;
-  width: 20%;
 }
 
 .headerWrapper, .addedCommentsCardHeader {

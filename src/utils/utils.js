@@ -53,7 +53,7 @@ export const convertEditableHTMLToMarkdown = (editableHtml) => {
   };
 
   const replaceCommentsSpansWithHighlighterDirective = (text) => {
-    const regex = /<span data-comment-thread-id="(.*)">(.*?)<\/span>/g;
+    const regex = /<span data-comment-thread-id="(.*?)">(.*?)<\/span>/g;
     let match;
     let newText = text;
     while ((match = regex.exec(text))) {

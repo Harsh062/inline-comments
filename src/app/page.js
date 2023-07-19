@@ -6,12 +6,16 @@ import Container from 'react-bootstrap/Container';
 import styles from './globals.module.css';
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 import { convertMarkdownToHTML, convertEditableHTMLToMarkdown, transformDraftsResp } from "../utils/utils";
-import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
+import { generateCommentThreadId } from "../helpers/commentsHelper";
+import { getAllDrafts, updateDraft } from "../services/draftsService";
+import { addCommentToThread, getCommentsForThreadId } from "../services/commentService";
 import SideNav from "@/components/SideNav/SideNav";
 import DraftPreview from "@/components/DraftPreview/DraftPreview";
 import DraftEdit from "@/components/DraftEdit/DraftEdit";
 import AddComment from "@/components/AddComment/AddComment";
 import AddedComments from "@/components/AddedComments/AddedComments";
+import { draftsJson } from "../db/drafts";
+import * as localStorageService from "../services/localStorageService";
 
 export default function Home() {
   const editorRef = useRef();
@@ -28,7 +32,7 @@ export default function Home() {
   const [firstCommentText, setFirstCommentText] = useState('');
   const [subsequentCommentText, setSubsequentCommentText] = useState('');
   const [previewHtml, setPreviewHtml] = useState(null);
-  const [editableHtml, setEditableHtml] = useState(null)
+  const [editableHtml, setEditableHtml] = useState(null);
   useEffect(() => {
     document.querySelector("body").classList.add(styles.pageBody);
     setLoading(true);

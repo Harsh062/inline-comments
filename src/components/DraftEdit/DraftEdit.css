@@ -12,3 +12,12 @@
     font-size: 24px;
     font-weight: bold;
   }
+
+  .editArea {
+    background-color: rgba(217, 245, 255,0.5);
+    padding: 10px;
+}
+
+.saveDraftButton, .cancelDraftButton {
+  margin: 7px;
+}

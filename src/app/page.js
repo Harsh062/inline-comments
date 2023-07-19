@@ -14,12 +14,13 @@ import DraftPreview from "@/components/DraftPreview/DraftPreview";
 import DraftEdit from "@/components/DraftEdit/DraftEdit";
 import AddComment from "@/components/AddComment/AddComment";
 import AddedComments from "@/components/AddedComments/AddedComments";
-import { draftsJson } from "../db/drafts";
-import * as localStorageService from "../services/localStorageService";
+import ToastWrapper from "@/components/Toast/ToastWrapper";
 
 export default function Home() {
   const editorRef = useRef();
   const [isLoading, setLoading]  = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastText, setToastText] = useState("");
   const [showAddedComments, setShowAddedComments] = useState(false);
   const [addedCommentsList, setAddedCommentsList] = useState([]);
   const [drafts, setDrafts] = useState([]);
@@ -126,7 +127,16 @@ export default function Home() {
       ...activeDraft,
       draftContent: mutatedDraftContentToBeUpdated
     });
-    
+    showAndHideToast("Added Comment Successfully");
+  }
+
+  const showAndHideToast = (toastText) => {
+    setShowToast(true);
+    setToastText(toastText);
+    setTimeout(() => {
+      setShowToast(false);
+      setToastText("");
+    }, 3000);
   }
 
   const handleSaveSubsequentCommentClick = () => {
@@ -136,6 +146,7 @@ export default function Home() {
     const addedCommentsList = getCommentsForThreadId(activeCommentThreadId);
     setShowAddedComments(true);
     setAddedCommentsList(addedCommentsList);
+    showAndHideToast("Added Comment Successfully");
   }
 
   const handleEditDraftClick = (draft) => {
@@ -154,6 +165,14 @@ export default function Home() {
     renderDraftContent({
       ...activeDraft,
       draftContent: markdown
+    });
+    setEditDraftMode(false);
+    showAndHideToast("Saved Draft Successfully");
+  }
+
+  const handleCancelDraftClick = () => {
+    renderDraftContent({
+      ...activeDraft
     });
     setEditDraftMode(false);
   }
@@ -223,9 +242,13 @@ export default function Home() {
     <Container className={styles.draftContainer}>
       <div className={styles.draftHeader}>Your Drafts</div>
       <div data-cy="tooltip" id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
+      <ToastWrapper showToast={showToast} toastText={toastText}/>
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
-        <SideNav renderDraftContent={renderDraftContent} isLoading={isLoading} drafts={drafts} activeDraftId={activeDraftId}/>
+        <SideNav renderDraftContent={renderDraftContent} 
+            isLoading={isLoading} 
+            drafts={drafts} 
+            activeDraftId={activeDraftId}/>
         {
         activeDraft && !editDraftMode &&
         <DraftPreview  activeDraft={activeDraft}
@@ -237,6 +260,7 @@ export default function Home() {
           {editDraftMode &&
         <DraftEdit  activeDraft={activeDraft}
           handleSaveDraftClick={handleSaveDraftClick} 
+          handleCancelDraftClick={handleCancelDraftClick}
           editableHtml={editableHtml} 
           editorRef={editorRef}/>
           }

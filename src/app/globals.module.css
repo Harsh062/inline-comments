@@ -58,6 +58,7 @@
   border-radius: 4px;
   white-space: nowrap;
   z-index: 1000;
+  cursor: pointer;
 }
 
 .draftPreviewWrapper, .editDraftWrapper {

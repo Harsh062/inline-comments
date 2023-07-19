@@ -19,13 +19,11 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
         </div>}
       {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
             return(
-            <>
               <Card key={comment.commentId}>
                 <Card.Body>
-                  <Card.Text>{comment.commentText}</Card.Text>
+                  <Card.Text key={comment.commentId}>{comment.commentText}</Card.Text>
                 </Card.Body>
               </Card>
-            </>
             )
           })
         }

@@ -6,7 +6,11 @@ import Container from 'react-bootstrap/Container';
 import styles from './globals.module.css';
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 import { convertMarkdownToHTML, convertEditableHTMLToMarkdown, transformDraftsResp } from "../utils/utils";
+
 import { generateCommentThreadId } from "../helpers/commentsHelper";
+import { ifSelectedTextContainsAlreadyHighlightedElements, getStartAndEndOffsetOfSelectedText,
+  updateTooltipPosition, getUniqueIdentifierForSelectedText } from "../helpers/selectionHelper";
+
 import { getAllDrafts, updateDraft } from "../services/draftsService";
 import { addCommentToThread, getCommentsForThreadId } from "../services/commentService";
 import SideNav from "@/components/SideNav/SideNav";
@@ -26,7 +30,6 @@ export default function Home() {
   const [drafts, setDrafts] = useState([]);
   const [activeCommentThreadId, setActiveCommentThreadId] = useState(null);
   const [activeDraft, setActiveDraft] = useState(null);
-  const [activeDraftId, setActiveDraftId] = useState(null);
   const [mutatedDraftContentToBeUpdated, setMutatedDraftContentToBeUpdated] = useState('');
   const [editDraftMode, setEditDraftMode] = useState(false);
   const [showAddCommentCard, setShowAddCommentCard] = useState(false);
@@ -37,22 +40,24 @@ export default function Home() {
   useEffect(() => {
     document.querySelector("body").classList.add(styles.pageBody);
     setLoading(true);
-    // Fetch posts from backend asynchronously
+    // We are using localstorage as our storage. Adding a setTimeout to simulate the experience of an Async call
     setTimeout(() => {
       const draftsResp = getAllDrafts();
       const draftsList = transformDraftsResp(draftsResp);
       setDrafts(draftsList);
+
+      // Set first draft as active by default
       renderDraftContent(draftsList[0]);
+
       setLoading(false);
     }, 500);
   }, []);
 
   setTimeout(() => {
     !editDraftMode && addEventListenerForHighlightedText();
-  }, 3000);
+  }, 1000);
 
   const addEventListenerForHighlightedText = () => {
-     // Get all elements with the custom attribute
      const draftContentWrapper = document.querySelector("div[data-draftid]");
      const elements = draftContentWrapper?.querySelectorAll('[data-comment-thread-id]') || [];
 
@@ -78,22 +83,22 @@ export default function Home() {
   }
 
   const renderDraftContent = (draft) => {
-    setActiveDraftId(draft.draftId);
     setActiveDraft(draft);
     const previewHtml = convertMarkdownToHTML(draft.draftContent, false);
     setPreviewHtml(previewHtml);
     handleTooltipVisibility(false);
+    setShowAddedComments(false);
+    setSubsequentCommentText('');
   }
 
   const loadCommentsForHighlightedText = (commentThreadId) => {
-    console.log("commentThreadId: ", commentThreadId);
     const addedCommentsList = getCommentsForThreadId(commentThreadId);
     setShowAddedComments(true);
+    handleTooltipVisibility(false);
     setAddedCommentsList(addedCommentsList);
   }
 
   const handleAddCommentClick = () => {
-    console.log("Add comment button clicked");
     setShowAddCommentCard(true);
     handleTooltipVisibility(false);
   }
@@ -102,6 +107,8 @@ export default function Home() {
     const tooltip = document.getElementById('tooltip');
     if(showTooltip) {
       tooltip.style.display = 'block';
+      setShowAddedComments(false);
+      setSubsequentCommentText('');
     } else {
       tooltip.style.display = 'none';
     }
@@ -113,7 +120,6 @@ export default function Home() {
   }
 
   const handleSaveFirstCommentClick = () => {
-    console.log("comment to save: ", firstCommentText, " draftContent to save: ", mutatedDraftContentToBeUpdated)
   
     // First save the mutated draft content, then add comment details to threadId
     updateDraft(activeDraft.draftId, mutatedDraftContentToBeUpdated);
@@ -140,7 +146,6 @@ export default function Home() {
   }
 
   const handleSaveSubsequentCommentClick = () => {
-    console.log("comment to save: ", subsequentCommentText)
     addCommentToThread(activeCommentThreadId, {commentText: subsequentCommentText});
     setSubsequentCommentText('');
     const addedCommentsList = getCommentsForThreadId(activeCommentThreadId);
@@ -153,6 +158,7 @@ export default function Home() {
     const editableHtml = convertMarkdownToHTML(draft.draftContent, true);
     setEditableHtml(editableHtml);
     setEditDraftMode(true);
+    setShowAddedComments(false);
   }
 
   const handleSaveDraftClick = () => {
@@ -179,61 +185,42 @@ export default function Home() {
 
   const handleFirstCommentTextChange = (e) => {
     setFirstCommentText(e.target.value);
-    console.log("Comment text changed: ", e.target.value);
   }
 
   const handleSubsequentCommentTextChange = (e) => {
     setSubsequentCommentText(e.target.value);
-    console.log("Comment text changed: ", e.target.value);
   }
 
   const handleCloseCommentsListClick = () => {
     setShowAddedComments(false);
-  }
-
-  const handleSelectionChange = (event) => {
-      console.log(document.getSelection());
+    setSubsequentCommentText('');
   }
 
   const handleMouseUpOverDraftContent = (event) => {
+    setShowAddCommentCard(false);
+    setFirstCommentText("");
     const selection = document.getSelection();
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    if (selectedText === '' || (range &&
-      range.startContainer.parentElement == range.endContainer.parentElement &&
-      range.cloneContents().childElementCount > 0)
-    ){
+
+    // We are not allowing users to select text that is already highlighted
+    if (selectedText === '' || (ifSelectedTextContainsAlreadyHighlightedElements(range))){
       handleTooltipVisibility(false);
       return;
     }
     const commentThreadId = generateCommentThreadId();
-    const contentTobeReplaced = `:inline-highlighter[${selectedText}]{comment-thread-id=##${commentThreadId}##}`;
     setActiveCommentThreadId(commentThreadId);
-    let startOffset;
-    let endOffset;
-    if(selection.focusNode.previousSibling === null) {
-      startOffset = selection.baseOffset;
-      endOffset = selection.extentOffset;
-    } else if(selection.focusNode.previousSibling.nodeName === "SPAN") {
-      const outerHTML = selection.focusNode.previousSibling.outerHTML;
-      const indexOfDataThreadAttr = outerHTML.indexOf('"ct-');
-      const startIndex = indexOfDataThreadAttr + 1;
-      const endIndex = startIndex + 39;
-      const commentThreadIdSubstring = outerHTML.substring(startIndex, endIndex);
-      startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 39 + 3;
-      endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + 39 + 3;
-    }
-    const mutatedDraftContent = activeDraft.draftContent.substring(0, startOffset) + contentTobeReplaced + activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1);
-    console.log("active draft content: ", activeDraft.draftContent);
-    console.log("First part: ", activeDraft.draftContent.substring(0, startOffset), " contentTobeReplaced: ", contentTobeReplaced, " last part: ", activeDraft.draftContent.substring(endOffset, activeDraft.draftContent.length-1));
-    console.log("consolidated string: ", mutatedDraftContent);
+    const contentTobeReplaced = getUniqueIdentifierForSelectedText(selectedText, commentThreadId);
+    const offsetObj = getStartAndEndOffsetOfSelectedText(selection, activeDraft);
+    
+    // We will mutate the draft content string by wrapping the selected text with concrete identifiers and adding a unique id to it 
+    const mutatedDraftContent = activeDraft.draftContent.substring(0, offsetObj.startOffset) + contentTobeReplaced
+     + activeDraft.draftContent.substring(offsetObj.endOffset, activeDraft.draftContent.length-1);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
-    console.log("range: ", range);
-    const position = document.documentElement.scrollTop || document.body.scrollTop;
-    const tooltip = document.getElementById('tooltip');
-    tooltip.style.left = `${position + rect.left}px`;
-    tooltip.style.top = `${position + rect.top}px`;
+
+    const rect = range.getBoundingClientRect();
+    updateTooltipPosition(rect);
+    
     handleTooltipVisibility(true);
   };
 
@@ -248,12 +235,11 @@ export default function Home() {
         <SideNav renderDraftContent={renderDraftContent} 
             isLoading={isLoading} 
             drafts={drafts} 
-            activeDraftId={activeDraftId}/>
+            activeDraftId={activeDraft?.draftId}/>
         {
         activeDraft && !editDraftMode &&
         <DraftPreview  activeDraft={activeDraft}
             handleEditDraftClick={handleEditDraftClick} 
-            handleSelectionChange={handleSelectionChange} 
             handleMouseUpOverDraftContent={handleMouseUpOverDraftContent} 
             previewHtml={previewHtml}/>
           }

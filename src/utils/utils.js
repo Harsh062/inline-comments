@@ -5,11 +5,9 @@ const convertTextToHtml = (text) => {
 };
 
 export const convertMarkdownToHTML = (markDownText, editable) => {
-    const markdownAsHtmlWithCommentSpans =
+    const markdownWithSpans =
     addSpansToHighlightedText(markDownText, editable);
-      console.log("markdownAsHtmlWithCommentSpans: ", markdownAsHtmlWithCommentSpans);
-    const transformedHtml = convertTextToHtml(markdownAsHtmlWithCommentSpans);
-    console.log("transformedHtml: ", transformedHtml);
+    const transformedHtml = convertTextToHtml(markdownWithSpans);
      return transformedHtml;
 };
 

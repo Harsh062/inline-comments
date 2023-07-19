@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 
 import styles from './globals.module.css';
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
-import { convertMarkdownToHTML, convertEditableHTMLToMarkdown } from "../utils/utils";
+import { convertMarkdownToHTML, convertEditableHTMLToMarkdown, transformDraftsResp } from "../utils/utils";
 import { getAllDrafts, updateDraft, generateCommentThreadId, addCommentToThread, getCommentsForThreadId } from "./draftsStore";
 import SideNav from "@/components/SideNav/SideNav";
 import DraftPreview from "@/components/DraftPreview/DraftPreview";
@@ -35,14 +35,7 @@ export default function Home() {
     // Fetch posts from backend asynchronously
     setTimeout(() => {
       const draftsResp = getAllDrafts();
-      const draftsList = [];
-      for(const draftId in draftsResp) {
-        const draftDetails = draftsResp[draftId];
-        draftsList.push({
-          draftId: draftId,
-          ...draftDetails
-        })
-      }
+      const draftsList = transformDraftsResp(draftsResp);
       setDrafts(draftsList);
       renderDraftContent(draftsList[0]);
       setLoading(false);
@@ -55,8 +48,8 @@ export default function Home() {
 
   const addEventListenerForHighlightedText = () => {
      // Get all elements with the custom attribute
-     const draftContentWrapper = document.getElementById("draftContent");
-     const elements = draftContentWrapper.querySelectorAll('[data-comment-thread-id]');
+     const draftContentWrapper = document.querySelector("div[data-draftid]");
+     const elements = draftContentWrapper?.querySelectorAll('[data-comment-thread-id]') || [];
 
      // Add a click event listener to each element
      elements.forEach(element => {
@@ -225,7 +218,7 @@ export default function Home() {
   return (
     <Container className={styles.draftContainer}>
       <div className={styles.draftHeader}>Your Drafts</div>
-      <div id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
+      <div data-cy="tooltip" id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
         <SideNav renderDraftContent={renderDraftContent} isLoading={isLoading} drafts={drafts} activeDraftId={activeDraftId}/>

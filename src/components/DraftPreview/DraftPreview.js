@@ -8,7 +8,7 @@ const DraftPreview = ({ activeDraft, handleEditDraftClick, handleSelectionChange
           <div className="draftTitle">{activeDraft.draftTitle}</div>
           <Button data-cy="editDraftButton" variant="primary" onClick={() => handleEditDraftClick(activeDraft)}>Edit</Button>
         </div>
-        <div data-cy="previewHtmlDiv" id="draftContent" className="draftContent" onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
+        <div data-draftId={activeDraft.draftId} data-cy={activeDraft.draftId} className="draftContent" onselectionchange={(event) => handleSelectionChange(event)} onMouseUp={(event) => handleMouseUpOverDraftContent(event)}  dangerouslySetInnerHTML={{__html: previewHtml}}/>
     </div>
     );
 };

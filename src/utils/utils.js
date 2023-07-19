@@ -13,6 +13,18 @@ export const convertMarkdownToHTML = (markDownText, editable) => {
      return transformedHtml;
 };
 
+export const transformDraftsResp = (draftsObj) => {
+  const draftsList = [];
+  for(const draftId in draftsObj) {
+    const draftDetails = draftsObj[draftId];
+    draftsList.push({
+      draftId: draftId,
+      ...draftDetails
+    })
+  }
+  return draftsList;
+}
+
 const addSpansToHighlightedText = (text, editable) => {
     const regex =
       /:inline-highlighter\[(.*?)\]{comment-thread-id=##(.*?)##}/g;

@@ -38,6 +38,6 @@ export const getStartAndEndOffsetOfSelectedText = (selection, activeDraft) => {
 export const updateTooltipPosition = (rect) => {
     const position = document.documentElement.scrollTop || document.body.scrollTop;
     const tooltip = document.getElementById('tooltip');
-    tooltip.style.left = `${position + rect.left}px`;
-    tooltip.style.top = `${position + rect.top}px`;
+    tooltip.style.left = `${position + rect.left - 200}px`;
+    tooltip.style.top = `${position + rect.top - 30}px`;
 }

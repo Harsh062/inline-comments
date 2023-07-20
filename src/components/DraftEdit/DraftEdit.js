@@ -8,8 +8,8 @@ const DraftEdit = ({ activeDraft, handleSaveDraftClick, editableHtml, editorRef,
         <div className="headerWrapper">
           <div className="draftTitle">{activeDraft.draftTitle}</div>
           <div>
-          <Button style={{"margin-right": "7px"}} data-cy="cancelEditDraftButton" variant="primary" onClick={() => handleCancelDraftClick()}>Cancel</Button>
-            <Button style={{"margin-right": "7px"}} data-cy="saveDraftButton" variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
+          <Button style={{"marginRight": "7px"}} data-cy="cancelEditDraftButton" variant="primary" onClick={() => handleCancelDraftClick()}>Cancel</Button>
+            <Button style={{"marginRight": "7px"}} data-cy="saveDraftButton" variant="primary" onClick={() => handleSaveDraftClick()}>Save</Button>
           </div>
         </div>
         <Form.Group controlId="exampleForm.ControlTextarea1">

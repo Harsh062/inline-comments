@@ -42,8 +42,7 @@ export default function Home() {
     setLoading(true);
     // We are using localstorage as our storage. Adding a setTimeout to simulate the experience of an Async call
     setTimeout(() => {
-      const draftsResp = getAllDrafts();
-      const draftsList = transformDraftsResp(draftsResp);
+      const draftsList = fetchAllDrafts();
       setDrafts(draftsList);
 
       // Set first draft as active by default
@@ -51,11 +50,18 @@ export default function Home() {
 
       setLoading(false);
     }, 500);
+    addEventListenerForHighlightedText();
   }, []);
+
+  const fetchAllDrafts = () => {
+    const draftsResp = getAllDrafts();
+    const draftsList = transformDraftsResp(draftsResp);
+    return draftsList;
+  }
 
   setTimeout(() => {
     !editDraftMode && addEventListenerForHighlightedText();
-  }, 1000);
+  }, 500);
 
   const addEventListenerForHighlightedText = () => {
      const draftContentWrapper = document.querySelector("div[data-draftid]");
@@ -135,6 +141,7 @@ export default function Home() {
       draftContent: mutatedDraftContentToBeUpdated
     }, true);
     showAndHideToast("Added Comment Successfully");
+    setDrafts(fetchAllDrafts());
   }
 
   const showAndHideToast = (toastText) => {
@@ -174,6 +181,7 @@ export default function Home() {
     }, false);
     setEditDraftMode(false);
     showAndHideToast("Saved Draft Successfully");
+    setDrafts(fetchAllDrafts());
   }
 
   const handleCancelDraftClick = () => {
@@ -228,10 +236,10 @@ export default function Home() {
   return (
     <Container className={styles.draftContainer}>
       <div className={styles.draftHeader}>Your Drafts</div>
-      <div data-cy="tooltip" id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
       <ToastWrapper showToast={showToast} toastText={toastText}/>
       {isLoading && <LoadingSpinner />}
       <div className="d-flex flex-row ">
+        <div data-cy="tooltip" id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
         <SideNav renderDraftContent={renderDraftContent} 
             isLoading={isLoading} 
             drafts={drafts} 

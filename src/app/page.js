@@ -85,6 +85,7 @@ export default function Home() {
     const previewHtml = convertMarkdownToHTML(draft.draftContent, false);
     setPreviewHtml(previewHtml);
     handleTooltipVisibility(false);
+    setEditDraftMode(false);
     if(!showAddedComments) {
       setShowAddedComments(false);
       setSubsequentCommentText('');

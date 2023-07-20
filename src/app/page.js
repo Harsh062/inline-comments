@@ -47,7 +47,7 @@ export default function Home() {
       setDrafts(draftsList);
 
       // Set first draft as active by default
-      renderDraftContent(draftsList[0]);
+      renderDraftContent(draftsList[0], false);
 
       setLoading(false);
     }, 500);
@@ -82,13 +82,15 @@ export default function Home() {
      }
   }
 
-  const renderDraftContent = (draft) => {
+  const renderDraftContent = (draft, showAddedComments) => {
     setActiveDraft(draft);
     const previewHtml = convertMarkdownToHTML(draft.draftContent, false);
     setPreviewHtml(previewHtml);
     handleTooltipVisibility(false);
-    setShowAddedComments(false);
-    setSubsequentCommentText('');
+    if(!showAddedComments) {
+      setShowAddedComments(false);
+      setSubsequentCommentText('');
+    }
   }
 
   const loadCommentsForHighlightedText = (commentThreadId) => {
@@ -132,7 +134,7 @@ export default function Home() {
     renderDraftContent({
       ...activeDraft,
       draftContent: mutatedDraftContentToBeUpdated
-    });
+    }, true);
     showAndHideToast("Added Comment Successfully");
   }
 
@@ -171,7 +173,7 @@ export default function Home() {
     renderDraftContent({
       ...activeDraft,
       draftContent: markdown
-    });
+    }, false);
     setEditDraftMode(false);
     showAndHideToast("Saved Draft Successfully");
   }
@@ -179,7 +181,7 @@ export default function Home() {
   const handleCancelDraftClick = () => {
     renderDraftContent({
       ...activeDraft
-    });
+    }, false);
     setEditDraftMode(false);
   }
 

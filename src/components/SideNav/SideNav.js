@@ -14,7 +14,7 @@ const SideNav = ({ renderDraftContent, isLoading, drafts, activeDraftId}) => {
                 style={{
                   backgroundColor: activeDraftId === draft.draftId ? 'aqua' : 'transparent',
                 }}
-                onClick={() => renderDraftContent(draft)}>{draft.draftTitle}</ListGroup.Item>
+                onClick={() => renderDraftContent(draft, false)}>{draft.draftTitle}</ListGroup.Item>
             );
           })}
       </div>

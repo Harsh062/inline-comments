@@ -32,6 +32,11 @@ export const getStartAndEndOffsetOfSelectedText = (selection, activeDraft) => {
       const commentThreadIdSubstring = outerHTML.substring(startIndex, endIndex);
       startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 3; // Adding 3 to incorporate "##}"
       endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 3;
+    } else if(selection.focusNode.previousSibling.nodeName === NODE_TYPES.BR) {
+        console.log("Active draft: ", activeDraft);
+        console.log("Last indexOf new line", activeDraft.draftContent.lastIndexOf("\n"));
+        startOffset = activeDraft.draftContent.lastIndexOf("\n") + selection.baseOffset + 1;
+        endOffset = activeDraft.draftContent.lastIndexOf("\n") + selection.extentOffset + 1;
     }
     return {
         startOffset,

@@ -216,11 +216,13 @@ export default function Home() {
     // We will mutate the draft content string by wrapping the selected text with concrete identifiers and adding a unique id to it 
     const mutatedDraftContent = activeDraft.draftContent.substring(0, offsetObj.startOffset) + contentTobeReplaced
      + activeDraft.draftContent.substring(offsetObj.endOffset, activeDraft.draftContent.length-1);
+     console.log("startOffset: ", activeDraft.draftContent.substring(0, offsetObj.startOffset), " contentTobeReplaced: ", contentTobeReplaced, " endOffset: ", activeDraft.draftContent.substring(offsetObj.endOffset, activeDraft.draftContent.length-1));
+     console.log("mutatedDraftContent: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
 
     const rect = range.getBoundingClientRect();
     updateTooltipPosition(rect);
-    
+
     handleTooltipVisibility(true);
   };
 

@@ -69,7 +69,6 @@ export default function Home() {
      // Since we want to block the mouseup event attached to the draft content
      elements.forEach(element => {
       element.addEventListener('mouseup', function(event) {
-        console.log("Inside span click");
         event.stopPropagation();
       });
     });
@@ -77,7 +76,6 @@ export default function Home() {
      // Event handler function for the click event
      function handleCustomAttributeClick(event) {
       const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
-      console.log('Clicked element with custom attribute:', customAttributeValue);
       loadCommentsForHighlightedText(customAttributeValue);
      }
   }
@@ -166,7 +164,6 @@ export default function Home() {
   const handleSaveDraftClick = () => {
     const html = editorRef.current.innerHTML;
     const markdown = convertEditableHTMLToMarkdown(html);
-    console.log("Transformed Markdown: ", markdown);
     setMutatedDraftContentToBeUpdated(markdown);
     // First save the mutated draft content, then add comment details to threadId
     updateDraft(activeDraft.draftId, markdown);
@@ -218,8 +215,6 @@ export default function Home() {
     // We will mutate the draft content string by wrapping the selected text with concrete identifiers and adding a unique id to it 
     const mutatedDraftContent = activeDraft.draftContent.substring(0, offsetObj.startOffset) + contentTobeReplaced
      + activeDraft.draftContent.substring(offsetObj.endOffset, activeDraft.draftContent.length-1);
-     console.log("startOffset: ", activeDraft.draftContent.substring(0, offsetObj.startOffset), " contentTobeReplaced: ", contentTobeReplaced, " endOffset: ", activeDraft.draftContent.substring(offsetObj.endOffset, activeDraft.draftContent.length-1));
-     console.log("mutatedDraftContent: ", mutatedDraftContent);
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
 
     const rect = range.getBoundingClientRect();

@@ -7,6 +7,7 @@ const ToastWrapper = ({ showToast, toastText}) => {
         className="p-3"
         position="top-end"
         style={{ zIndex: 1 }}
+        data-cy="toastContainer"
       >
         <Toast show={showToast} delay={3000} autohide>
           <Toast.Body>{toastText}</Toast.Body>

@@ -3,7 +3,6 @@ import Form from 'react-bootstrap/Form';
 import "./Editor.css";
   
 const Editor = ({ draftId, draftTitle, draftContent}) => {
-    console.log(draftId, draftTitle, draftContent, "Inside Editor Screen");
     return (
         <div>
             <Form>

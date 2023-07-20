@@ -7,7 +7,6 @@ export const addCommentToThread = (commentThreadId, commentData) => {
     const commentIds = currCommentThreadsObj[commentThreadId];
     const currCommentsObj =localStorageService.getCommentsFromLocalStorage();
     if(!commentIds) {
-      console.log("No comments exists. Adding first comment to thread ");
       currCommentThreadsObj[commentThreadId] = [];
     }
     currCommentThreadsObj[commentThreadId].push(commentId);

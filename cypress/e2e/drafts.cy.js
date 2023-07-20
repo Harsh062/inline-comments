@@ -1,8 +1,9 @@
 
 
 context.only("/", () => {
-  describe('template spec', () => {
-    it('passes', () => {
+  describe('Test draft edit, highlight and add comment flows', () => {
+    it('Tests', () => {
+      // Visit home page
       cy.visit("http://localhost:3000");
 
       // Click on side draft items in the sidebar
@@ -24,6 +25,9 @@ context.only("/", () => {
       // Save the comment
       cy.get("[data-cy=saveFirstCommentButton]");
       cy.get("[data-cy=saveFirstCommentButton]").click();
+
+      // Check if toast is visible on successful add comment
+      cy.get("[data-cy=toastContainer]");
 
       // Reply to existing comment
       cy.get("[data-cy=addCommentsToThreadTextBox]");

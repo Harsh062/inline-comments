@@ -7,9 +7,9 @@ export const addSpansToHighlightedText = (text, editable) => {
     let spanStr;
     while ((match = regex.exec(text))) {
       if(editable === false) {
-        spanStr = `<span style="background-color: yellow; cursor: pointer" data-comment-thread-id="${match[2]}">${match[1]}</span>`;
+        spanStr = `<span style="background-color: yellow; cursor: pointer" data-comment-thread-ids="${match[2]}">${match[1]}</span>`;
       } else {
-        spanStr = `<span data-comment-thread-id="${match[2]}">${match[1]}</span>`;
+        spanStr = `<span data-comment-thread-ids="${match[2]}">${match[1]}</span>`;
       }
       newText = newText.replace(match[0],spanStr);
     }
@@ -23,7 +23,7 @@ export const replaceCommentsSpansWithHighlighterDirective = (text) => {
     while ((match = regex.exec(text))) {
       newText = newText.replace(
         match[0],
-        `:inline-highlighter[${match[2]}]{comment-thread-id=##${match[1]}##}`
+        `:inline-highlighter[${match[2]}]{comment-thread-ids=[##${match[1]}##]}`
       );
     }
     return newText;
@@ -35,8 +35,8 @@ export const getSpanStartAndEndOffsets = (selection, activeDraft) => {
     const startIndex = indexOfDataThreadAttr + 1;
     const endIndex = startIndex + COMMENT_THREAD_ID_LENGTH;
     const commentThreadIdSubstring = outerHTML.substring(startIndex, endIndex);
-    const startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 3; // Adding 3 to incorporate "##}"
-    const endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 3;
+    const startOffset = selection.baseOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 4; // Adding 4 to incorporate "##}]"
+    const endOffset = selection.extentOffset + activeDraft.draftContent.indexOf(commentThreadIdSubstring) + COMMENT_THREAD_ID_LENGTH + 4;
     return {
         startOffset, endOffset
     };

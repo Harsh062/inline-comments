@@ -65,7 +65,7 @@ export default function Home() {
 
   const addEventListenerForHighlightedText = () => {
      const draftContentWrapper = document.querySelector("div[data-draftid]");
-     const elements = draftContentWrapper?.querySelectorAll('[data-comment-thread-id]') || [];
+     const elements = draftContentWrapper?.querySelectorAll('[data-comment-thread-ids]') || [];
 
      // Add a click event listener to each element
      elements.forEach(element => {
@@ -81,7 +81,7 @@ export default function Home() {
  
      // Event handler function for the click event
      function handleCustomAttributeClick(event) {
-      const customAttributeValue = event.target.getAttribute('data-comment-thread-id');
+      const customAttributeValue = event.target.getAttribute('data-comment-thread-ids');
       loadCommentsForHighlightedText(customAttributeValue);
      }
   }

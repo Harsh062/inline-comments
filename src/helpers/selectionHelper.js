@@ -12,7 +12,7 @@ export const ifSelectedTextContainsAlreadyHighlightedElements = (range) => {
 }
 
 export const getUniqueIdentifierForSelectedText = (selectedText, commentThreadId) => {
-    return `:inline-highlighter[${selectedText}]{comment-thread-id=##${commentThreadId}##}`;
+    return `:inline-highlighter[${selectedText}]{comment-thread-ids=[##${commentThreadId}##]}`;
 }
 
 export const getStartAndEndOffsetOfSelectedText = (selection, activeDraft) => {

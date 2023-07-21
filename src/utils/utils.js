@@ -26,7 +26,7 @@ export const convertEditableHTMLToMarkdown = (editableHtml) => {
   const sanitized = sanitizeHtml(editableHtml, {
     allowedTags: ["br", "span"],
     allowedAttributes: {
-      span: ["data-comment-thread-id"],
+      span: ["data-comment-thread-ids"],
     },
   });
   const withNewLines = replaceLineBreakWithNewLine(sanitized);

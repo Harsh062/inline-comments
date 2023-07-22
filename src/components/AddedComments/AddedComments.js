@@ -5,7 +5,8 @@ import CloseButton from 'react-bootstrap/CloseButton';
 
 import './AddedComments.css';
   
-const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showAddedComments, addedCommentsList, handleSubsequentCommentTextChange, handleSaveSubsequentCommentClick, subsequentCommentText}) => {
+const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showAddedComments, addedCommentsList,
+   handleSubsequentCommentTextChange, handleSaveSubsequentCommentClick, subsequentCommentText, handleDeleteCommentClick}) => {
     return (
         <div className="addedCommentsWrapper">
         {!showAddCommentCard && showAddedComments && 
@@ -21,7 +22,8 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
             return(
               <Card key={comment.commentId}>
                 <Card.Body>
-                  <Card.Text key={comment.commentId}>{comment.commentText}</Card.Text>
+                  <Card.Text>{comment.commentText}</Card.Text>
+                  <Button key={comment.commentId} variant="primary" onClick={() => handleDeleteCommentClick(comment.commentId)}>Delete</Button>
                 </Card.Body>
               </Card>
             )

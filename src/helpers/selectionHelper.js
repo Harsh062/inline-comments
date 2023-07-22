@@ -1,4 +1,4 @@
-import { NODE_TYPES } from "../constants/constants";
+import { NODE_TYPES, HIGHLIGHT_IDENTIFIER_REGEX } from "../constants/constants";
 
 import { getBreaklineStartAndEndOffsets } from "../helpers/breakLineHelper";
 import { getSpanStartAndEndOffsets } from "../helpers/spanHelper";
@@ -41,3 +41,31 @@ export const updateTooltipPosition = (rect) => {
     tooltip.style.left = `${position + rect.left - 200}px`;
     tooltip.style.top = `${position + rect.top - 30}px`;
 }
+
+export const removeHighlightMarker = (commentThreadId, draftContent) => {
+  const regex = HIGHLIGHT_IDENTIFIER_REGEX;
+  let match;
+  let matchingMarkerText;
+  let contentText;
+  while ((match = regex.exec(draftContent))) {
+    console.log("Match[0]: ", match[0], " commentThreadId: ", commentThreadId, " index: ", match[0].indexOf(commentThreadId));
+   if(match[0].indexOf(commentThreadId) > -1) {
+    matchingMarkerText = match[0];
+    contentText = match[1];
+    break;
+   }
+  }
+  const commentThreadsStrStartIndex =  matchingMarkerText.indexOf("=[") + 2;
+  const commentThreadsStrEndIndex =  matchingMarkerText.indexOf("]}");
+  const commentThreadIdsSubstring = matchingMarkerText.substring(commentThreadsStrStartIndex, commentThreadsStrEndIndex);
+  const commentThreadIdsList = commentThreadIdsSubstring.split(",");
+  let mutatedDraftContent = draftContent;
+  if(commentThreadIdsList.length===1) {
+    // Only one comment was present. Remove the highlight section
+    console.log("contentText: ", contentText, " matchingMarkerText: ", matchingMarkerText);
+    mutatedDraftContent = mutatedDraftContent.replace(matchingMarkerText, contentText);
+
+  }
+  return mutatedDraftContent;
+}
+

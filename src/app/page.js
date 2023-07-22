@@ -9,10 +9,10 @@ import { convertMarkdownToHTML, convertEditableHTMLToMarkdown, transformDraftsRe
 
 import { generateCommentThreadId } from "../helpers/commentsHelper";
 import { ifSelectedTextContainsAlreadyHighlightedElements, getStartAndEndOffsetOfSelectedText,
-  updateTooltipPosition, getUniqueIdentifierForSelectedText } from "../helpers/selectionHelper";
+  updateTooltipPosition, getUniqueIdentifierForSelectedText, removeHighlightMarker } from "../helpers/selectionHelper";
 
 import { getAllDrafts, updateDraft } from "../services/draftsService";
-import { addCommentToThread, getCommentsForThreadId } from "../services/commentService";
+import { addCommentToThread, getCommentsForThreadId, handleCommentDeletion } from "../services/commentService";
 import SideNav from "@/components/SideNav/SideNav";
 import DraftPreview from "@/components/DraftPreview/DraftPreview";
 import DraftEdit from "@/components/DraftEdit/DraftEdit";
@@ -99,6 +99,7 @@ export default function Home() {
   }
 
   const loadCommentsForHighlightedText = (commentThreadId) => {
+    setActiveCommentThreadId(commentThreadId);
     const addedCommentsList = getCommentsForThreadId(commentThreadId);
     setShowAddedComments(true);
     handleTooltipVisibility(false);
@@ -191,6 +192,25 @@ export default function Home() {
     setEditDraftMode(false);
   }
 
+  const handleDeleteCommentClick = (commentId) => {
+    console.log("CommentId: ", commentId, " activeCommentThreadId: ", activeCommentThreadId);
+    const remainingCommentIdsForActiveThread = handleCommentDeletion(commentId, activeCommentThreadId);
+
+    if(remainingCommentIdsForActiveThread.length === 0) {
+      const mutatedDraftContent = removeHighlightMarker(activeCommentThreadId, activeDraft.draftContent);
+      updateDraft(activeDraft.draftId, mutatedDraftContent);
+      renderDraftContent({
+        ...activeDraft,
+        draftContent: mutatedDraftContent
+      }, false);
+    } else {
+      const addedCommentsList = getCommentsForThreadId(activeCommentThreadId);
+      setShowAddedComments(true);
+      setAddedCommentsList(addedCommentsList);
+      showAndHideToast("Deleted Comment Successfully");
+    }
+  }
+
   const handleFirstCommentTextChange = (e) => {
     setFirstCommentText(e.target.value);
   }
@@ -271,7 +291,8 @@ export default function Home() {
         addedCommentsList={addedCommentsList}
         handleSubsequentCommentTextChange={handleSubsequentCommentTextChange}
         handleSaveSubsequentCommentClick={handleSaveSubsequentCommentClick}
-        subsequentCommentText={subsequentCommentText} />
+        subsequentCommentText={subsequentCommentText}
+        handleDeleteCommentClick={handleDeleteCommentClick} />
     </Container>
   );
 }

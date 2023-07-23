@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { BREAKLINE_IDENTIFIER_REGEX, NEWLINE_IDENTIFIER_REGEX, BREAK_LINE_ID_LENGTH } from "../constants/constants";
 
 export const addBreakpoints = (text) => {
-    const regex = NEWLINE_IDENTIFIER_REGEX
+    const regex = new RegExp(NEWLINE_IDENTIFIER_REGEX);
     let match;
     let newText = text;
     let breaklineStr;
@@ -19,7 +19,7 @@ const generateIdentifierForBreakPoint = () => {
 }
 
 export const replaceLineBreakWithNewLine = (text) => {
-    const regex = BREAKLINE_IDENTIFIER_REGEX;
+    const regex = new RegExp(BREAKLINE_IDENTIFIER_REGEX);
     let match;
     let newText = text;
     while ((match = regex.exec(text))) {

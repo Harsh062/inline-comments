@@ -1,7 +1,7 @@
 import { SPAN_IDENTIFIER_REGEX, HIGHLIGHT_IDENTIFIER_REGEX, COMMENT_THREAD_ID_LENGTH } from "../constants/constants";
 
 export const addSpansToHighlightedText = (text, editable) => {
-    const regex = HIGHLIGHT_IDENTIFIER_REGEX;
+    const regex = new RegExp(HIGHLIGHT_IDENTIFIER_REGEX);
     let match;
     let newText = text;
     let spanStr;
@@ -17,7 +17,7 @@ export const addSpansToHighlightedText = (text, editable) => {
 };
 
 export const replaceCommentsSpansWithHighlighterDirective = (text) => {
-    const regex = SPAN_IDENTIFIER_REGEX;
+    const regex = new RegExp(SPAN_IDENTIFIER_REGEX);
     let match;
     let newText = text;
     while ((match = regex.exec(text))) {

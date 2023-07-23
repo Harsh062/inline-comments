@@ -16,8 +16,8 @@
 .draftContainer {
   background-color: white;
   padding: 0px;
-  position: relative;
   min-height: 100vh;
+  margin: 0 5%;
 }
 
 .draftTitle {
@@ -30,7 +30,8 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: '18rem'
+  width: '18rem';
+  z-index: 1000
 }
 
 .draftContent {
@@ -52,13 +53,14 @@
 
 .tooltipText {
   position: absolute;
-  padding: 5px;
+  padding: 5px 10px;
   background-color: #333;
   color: #fff;
   border-radius: 4px;
   white-space: nowrap;
   z-index: 1000;
   cursor: pointer;
+  left: -1000px;
 }
 
 .draftPreviewWrapper, .editDraftWrapper {

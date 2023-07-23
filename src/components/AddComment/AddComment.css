@@ -3,10 +3,39 @@
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: '18rem'
+    width: '18rem';
+    z-index: 1000;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid var(--ds-border,#dfe1e6);
+    box-shadow: var(--ds-shadow-overflow,0 8px 16px -4px rgba(9,30,66,0.25));
   }
 
   .headerWrapper {
     display: flex;
     justify-content: space-between;
+    background-color: white;
+  }
+
+  .addCommentHeader {
+    font-size: 14px;
+    padding: 10px;
+    font-weight: 500;
+  }
+
+  .saveButtonWrapper {
+    background-color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 0px;
+  }
+
+  .saveButton {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  textarea::placeholder {
+    font-size: 12px;
   }

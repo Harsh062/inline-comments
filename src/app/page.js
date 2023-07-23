@@ -1,7 +1,6 @@
 "use client"; // This is a client component 👈🏽
 import React, { useEffect, useState, useRef } from "react";
 import '../../node_modules/bootstrap/dist/css/bootstrap.css';
-import Container from 'react-bootstrap/Container';
 
 import styles from './globals.module.css';
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
@@ -12,7 +11,7 @@ import { ifSelectedTextContainsAlreadyHighlightedElements, getStartAndEndOffsetO
   updateTooltipPosition, getUniqueIdentifierForSelectedText, removeHighlightMarker } from "../helpers/selectionHelper";
 
 import { getAllDrafts, updateDraft } from "../services/draftsService";
-import { addCommentToThread, getCommentsForThreadId, handleCommentDeletion } from "../services/commentService";
+import { addCommentToThread, getCommentsForThreadId, handleCommentDeletion, removeCommentThreadId } from "../services/commentService";
 import SideNav from "@/components/SideNav/SideNav";
 import DraftPreview from "@/components/DraftPreview/DraftPreview";
 import DraftEdit from "@/components/DraftEdit/DraftEdit";
@@ -22,6 +21,7 @@ import ToastWrapper from "@/components/Toast/ToastWrapper";
 
 export default function Home() {
   const editorRef = useRef();
+  const tooltipRef = useRef(null);
   const [isLoading, setLoading]  = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState("");
@@ -112,13 +112,12 @@ export default function Home() {
   }
 
   const handleTooltipVisibility = (showTooltip) => {
-    const tooltip = document.getElementById('tooltip');
+    const tooltip = tooltipRef.current;
     if(showTooltip) {
-      tooltip.style.display = 'block';
       setShowAddedComments(false);
       setSubsequentCommentText('');
     } else {
-      tooltip.style.display = 'none';
+      tooltip.style.left = "-1000px";
     }
   }
 
@@ -128,7 +127,9 @@ export default function Home() {
   }
 
   const handleSaveFirstCommentClick = () => {
-  
+    if(!firstCommentText) {
+      return;
+    }
     // First save the mutated draft content, then add comment details to threadId
     updateDraft(activeDraft.draftId, mutatedDraftContentToBeUpdated);
     addCommentToThread(activeCommentThreadId, {commentText: firstCommentText});
@@ -193,11 +194,11 @@ export default function Home() {
   }
 
   const handleDeleteCommentClick = (commentId) => {
-    console.log("CommentId: ", commentId, " activeCommentThreadId: ", activeCommentThreadId);
     const remainingCommentIdsForActiveThread = handleCommentDeletion(commentId, activeCommentThreadId);
 
     if(remainingCommentIdsForActiveThread.length === 0) {
       const mutatedDraftContent = removeHighlightMarker(activeCommentThreadId, activeDraft.draftContent);
+      removeCommentThreadId(activeCommentThreadId);
       updateDraft(activeDraft.draftId, mutatedDraftContent);
       renderDraftContent({
         ...activeDraft,
@@ -247,52 +248,53 @@ export default function Home() {
     setMutatedDraftContentToBeUpdated(mutatedDraftContent);
 
     const rect = range.getBoundingClientRect();
-    updateTooltipPosition(rect);
-
     handleTooltipVisibility(true);
+    updateTooltipPosition(rect, tooltipRef.current);
   };
 
 
   return (
-    <Container className={styles.draftContainer}>
-      <div className={styles.draftHeader}>Your Drafts</div>
-      <ToastWrapper showToast={showToast} toastText={toastText}/>
-      {isLoading && <LoadingSpinner />}
-      <div className="d-flex flex-row ">
-        <div data-cy="tooltip" id="tooltip" className={`${styles.tooltipText} ${styles.hidden}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
-        <SideNav renderDraftContent={renderDraftContent} 
-            isLoading={isLoading} 
-            drafts={drafts} 
-            activeDraftId={activeDraft?.draftId}/>
-        {
-        activeDraft && !editDraftMode &&
-        <DraftPreview  activeDraft={activeDraft}
-            handleEditDraftClick={handleEditDraftClick} 
-            handleMouseUpOverDraftContent={handleMouseUpOverDraftContent} 
-            previewHtml={previewHtml}/>
-          }
-          {editDraftMode &&
-        <DraftEdit  activeDraft={activeDraft}
-          handleSaveDraftClick={handleSaveDraftClick} 
-          handleCancelDraftClick={handleCancelDraftClick}
-          editableHtml={editableHtml} 
-          editorRef={editorRef}/>
-          }
-      </div>
-      {showAddCommentCard && !showAddedComments && !editDraftMode && 
-        <AddComment handleCloseCommentCardClick={handleCloseCommentCardClick}
-        handleFirstCommentTextChange={handleFirstCommentTextChange}
-        firstCommentText={firstCommentText}
-        handleSaveFirstCommentClick={handleSaveFirstCommentClick}/>
+    <div style={{position: "relative"}}>
+       {showAddCommentCard && !showAddedComments && !editDraftMode && 
+          <AddComment handleCloseCommentCardClick={handleCloseCommentCardClick}
+          handleFirstCommentTextChange={handleFirstCommentTextChange}
+          firstCommentText={firstCommentText}
+          handleSaveFirstCommentClick={handleSaveFirstCommentClick}/>
       }
       <AddedComments handleCloseCommentsListClick={handleCloseCommentsListClick}
-        showAddCommentCard={showAddCommentCard}
-        showAddedComments={showAddedComments}
-        addedCommentsList={addedCommentsList}
-        handleSubsequentCommentTextChange={handleSubsequentCommentTextChange}
-        handleSaveSubsequentCommentClick={handleSaveSubsequentCommentClick}
-        subsequentCommentText={subsequentCommentText}
-        handleDeleteCommentClick={handleDeleteCommentClick} />
-    </Container>
+          showAddCommentCard={showAddCommentCard}
+          showAddedComments={showAddedComments}
+          addedCommentsList={addedCommentsList}
+          handleSubsequentCommentTextChange={handleSubsequentCommentTextChange}
+          handleSaveSubsequentCommentClick={handleSaveSubsequentCommentClick}
+          subsequentCommentText={subsequentCommentText}
+          handleDeleteCommentClick={handleDeleteCommentClick} />
+      <div className={styles.draftContainer}>
+        <div className={styles.draftHeader}>Your Drafts</div>
+        <ToastWrapper showToast={showToast} toastText={toastText}/>
+        {isLoading && <LoadingSpinner />}
+        <div className="d-flex flex-row ">
+          <div data-cy="tooltip" ref={tooltipRef} className={`${styles.tooltipText}`} onClick={() => handleAddCommentClick()}>ADD COMMENT</div>
+          <SideNav renderDraftContent={renderDraftContent} 
+              isLoading={isLoading} 
+              drafts={drafts} 
+              activeDraftId={activeDraft?.draftId}/>
+          {
+          activeDraft && !editDraftMode &&
+          <DraftPreview  activeDraft={activeDraft}
+              handleEditDraftClick={handleEditDraftClick} 
+              handleMouseUpOverDraftContent={handleMouseUpOverDraftContent} 
+              previewHtml={previewHtml}/>
+            }
+            {editDraftMode &&
+          <DraftEdit  activeDraft={activeDraft}
+            handleSaveDraftClick={handleSaveDraftClick} 
+            handleCancelDraftClick={handleCancelDraftClick}
+            editableHtml={editableHtml} 
+            editorRef={editorRef}/>
+            }
+        </div>
+      </div>
+    </div>
   );
 }

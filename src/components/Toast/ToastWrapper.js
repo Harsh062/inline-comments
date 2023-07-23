@@ -9,7 +9,7 @@ const ToastWrapper = ({ showToast, toastText}) => {
         style={{ zIndex: 1 }}
         data-cy="toastContainer"
       >
-        <Toast show={showToast} delay={3000} autohide>
+        <Toast bg="success" show={showToast} delay={3000} autohide>
           <Toast.Body>{toastText}</Toast.Body>
         </Toast>
       </ToastContainer>

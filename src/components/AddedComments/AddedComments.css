@@ -3,7 +3,8 @@
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: '18rem'
+    width: '18rem';
+    z-index: 1000
 }
 
 .addedCommentsCardHeader {

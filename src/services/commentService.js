@@ -1,8 +1,6 @@
 import * as commentsHelper from "../helpers/commentsHelper";
 import * as localStorageService from "../services/localStorageService";
 
-import { HIGHLIGHT_IDENTIFIER_REGEX } from "../constants/constants";
-
 export const addCommentToThread = (commentThreadId, commentData) => {
     const commentId = commentsHelper.generateCommentId();
     const currCommentThreadsObj = localStorageService.getCommentThreadsFromLocalStorage();
@@ -33,6 +31,12 @@ export const handleCommentDeletion = (commentId, commentThreadId) => {
   currCommentThreadsObj[commentThreadId] = newCommentIdsForThread;
   localStorageService.updateCommentsThreadInLocalStorage(currCommentThreadsObj);
   return newCommentIdsForThread;
+}
+
+export const removeCommentThreadId = (commentThreadId) => {
+  const currCommentThreadsObj = localStorageService.getCommentThreadsFromLocalStorage();
+  delete currCommentThreadsObj[commentThreadId];
+  localStorageService.updateCommentsThreadInLocalStorage(currCommentThreadsObj);
 }
 
 export const getCommentsForThreadId = (commentThreadId) => {

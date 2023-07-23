@@ -35,20 +35,18 @@ export const getStartAndEndOffsetOfSelectedText = (selection, activeDraft) => {
     return offset;
 }
   
-export const updateTooltipPosition = (rect) => {
-    const position = document.documentElement.scrollTop || document.body.scrollTop;
-    const tooltip = document.getElementById('tooltip');
-    tooltip.style.left = `${position + rect.left - 200}px`;
-    tooltip.style.top = `${position + rect.top - 30}px`;
+export const updateTooltipPosition = (rect, tooltip) => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    tooltip.style.left = `${rect.left + (rect.width / 2) - (tooltip.clientWidth / 2)}px`;
+    tooltip.style.top = `${scrollTop + rect.top - (tooltip.clientHeight) - 2}px`;
 }
 
 export const removeHighlightMarker = (commentThreadId, draftContent) => {
-  const regex = HIGHLIGHT_IDENTIFIER_REGEX;
+  const regex = new RegExp(HIGHLIGHT_IDENTIFIER_REGEX);
   let match;
   let matchingMarkerText;
   let contentText;
   while ((match = regex.exec(draftContent))) {
-    console.log("Match[0]: ", match[0], " commentThreadId: ", commentThreadId, " index: ", match[0].indexOf(commentThreadId));
    if(match[0].indexOf(commentThreadId) > -1) {
     matchingMarkerText = match[0];
     contentText = match[1];
@@ -62,7 +60,6 @@ export const removeHighlightMarker = (commentThreadId, draftContent) => {
   let mutatedDraftContent = draftContent;
   if(commentThreadIdsList.length===1) {
     // Only one comment was present. Remove the highlight section
-    console.log("contentText: ", contentText, " matchingMarkerText: ", matchingMarkerText);
     mutatedDraftContent = mutatedDraftContent.replace(matchingMarkerText, contentText);
 
   }

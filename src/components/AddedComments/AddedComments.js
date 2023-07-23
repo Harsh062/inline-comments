@@ -10,14 +10,10 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
     return (
         <div className="addedCommentsWrapper">
         {!showAddCommentCard && showAddedComments && 
-        <div>
-          <Card>
-            <Card.Body className="addedCommentsCardHeader">
-              <Card.Title>Comments</Card.Title>
-              <CloseButton data-cy="closeCommentsButton" onClick={() => handleCloseCommentsListClick()}/>
-            </Card.Body>
-          </Card>
-        </div>}
+          <div className="addedCommentsCardHeader">
+            <div className='addedCommentsHeader'>Comments</div>
+            <CloseButton className='addedCommentsCloseButton' data-cy="closeCommentsButton" onClick={() => handleCloseCommentsListClick()}/>
+          </div>}
       {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
             return(
               <Card key={comment.commentId}>

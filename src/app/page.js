@@ -22,6 +22,8 @@ import ToastWrapper from "@/components/Toast/ToastWrapper";
 export default function Home() {
   const editorRef = useRef();
   const tooltipRef = useRef(null);
+  const addCommentWrapper = useRef(null);
+  const [activeSelection, setActiveSelection] = useState(null);
   const [isLoading, setLoading]  = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState("");
@@ -156,6 +158,9 @@ export default function Home() {
   }
 
   const handleSaveSubsequentCommentClick = () => {
+    if(!subsequentCommentText) {
+      return;
+    }
     addCommentToThread(activeCommentThreadId, {commentText: subsequentCommentText});
     setSubsequentCommentText('');
     const addedCommentsList = getCommentsForThreadId(activeCommentThreadId);
@@ -229,6 +234,7 @@ export default function Home() {
     setShowAddCommentCard(false);
     setFirstCommentText("");
     const selection = document.getSelection();
+    setActiveSelection(selection);
     const selectedText = selection.toString();
     const range = selection.getRangeAt(0);
 

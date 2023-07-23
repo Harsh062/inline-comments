@@ -1,7 +1,7 @@
 .addCommentWrapper {
     position: absolute;
     right: 0;
-    top: 50%;
+    top: 30%;
     transform: translateY(-50%);
     width: '18rem';
     z-index: 1000;
@@ -11,15 +11,28 @@
     box-shadow: var(--ds-shadow-overflow,0 8px 16px -4px rgba(9,30,66,0.25));
   }
 
+
+  .btn-primary {
+    background-color: #0052CC !important;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  .btn-close {
+    font-size: 12px;
+  }
+
   .headerWrapper {
     display: flex;
     justify-content: space-between;
     background-color: white;
+    align-items: center;
   }
 
   .addCommentHeader {
     font-size: 14px;
-    padding: 10px;
+    padding: 5px 10px;
     font-weight: 500;
   }
 

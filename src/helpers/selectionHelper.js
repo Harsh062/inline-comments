@@ -4,7 +4,7 @@ import { getBreaklineStartAndEndOffsets } from "../helpers/breakLineHelper";
 import { getSpanStartAndEndOffsets } from "../helpers/spanHelper";
 
 export const ifSelectedTextContainsAlreadyHighlightedElements = (range) => {
-    if(range && range.startContainer.parentElement == range.endContainer.parentElement && range.cloneContents().childElementCount > 0) {
+    if(range && range.cloneContents() && range.cloneContents().childElementCount > 0) {
       return true;
     } else {
       return false;

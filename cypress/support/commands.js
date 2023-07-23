@@ -1,4 +1,4 @@
-Cypress.Commands.add("selection", { prevSubject: true }, (subject, fn) => {
+Cypress.Commands.add("selectText", { prevSubject: true }, (subject, fn) => {
   cy.wrap(subject).trigger("mousedown").then(fn).trigger("mouseup");
 
   cy.document().trigger("selectionchange");
@@ -10,7 +10,7 @@ Cypress.Commands.add(
   "highlightText",
   { prevSubject: true },
   (subject, query, endQuery) => {
-    return cy.wrap(subject).selection(($el) => {
+    return cy.wrap(subject).selectText(($el) => {
       if (typeof query === "string") {
         const anchorNode = getTextNode($el[0], query);
         const focusNode = endQuery ? getTextNode($el[0], endQuery) : anchorNode;

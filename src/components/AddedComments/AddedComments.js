@@ -16,10 +16,10 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
           </div>}
       {!showAddCommentCard && showAddedComments && addedCommentsList.map(comment =>{
             return(
-              <Card key={comment.commentId}>
+              <Card key={comment.commentId} className='commentsCard'>
                 <Card.Body>
                   <Card.Text>{comment.commentText}</Card.Text>
-                  <Button key={comment.commentId} variant="primary" onClick={() => handleDeleteCommentClick(comment.commentId)}>Delete</Button>
+                  <Button data-cy="deleteCommentButton" key={comment.commentId} variant="primary" onClick={() => handleDeleteCommentClick(comment.commentId)}>Delete</Button>
                 </Card.Body>
               </Card>
             )
@@ -27,7 +27,7 @@ const AddedComments = ({ handleCloseCommentsListClick, showAddCommentCard, showA
         }
         {!showAddCommentCard && showAddedComments &&
           <div>
-            <Card style={{ width: '18rem' }}>
+            <Card className='commentsCard'>
               <Card.Body>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
                   <Form.Control data-cy="addCommentsToThreadTextBox" as="textarea" rows={3} placeholder="Reply" onChange={(e) => handleSubsequentCommentTextChange(e)} value={subsequentCommentText} />

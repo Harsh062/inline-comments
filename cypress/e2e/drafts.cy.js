@@ -1,7 +1,12 @@
 
 
 context.only("/", () => {
-  describe('Test draft edit, highlight and add comment flows', () => {
+  beforeEach(() => {});
+
+  after(() => {
+    cy.clearLocalStorage();
+  });
+  describe('Test draft edit, highlight, add and delete comment flows', () => {
     it('Tests', () => {
       // Visit home page
       cy.visit("http://localhost:3000");
@@ -33,22 +38,28 @@ context.only("/", () => {
       cy.get("[data-cy=addCommentsToThreadTextBox]");
       cy.get('textarea').type('Reply to existing comment via cypress');
 
-      // Save the reply to the existing comment
-      cy.get("[data-cy=saveSubsequentCommentsButton]");
-      cy.get("[data-cy=saveSubsequentCommentsButton]").click();
+      // Delete the entered comment
+      cy.get("[data-cy=deleteCommentButton]");
+      cy.get("[data-cy=deleteCommentButton]").click();
 
+      // Add another comment to test close button functionality
+      cy.get('[data-cy="33242342347"]').highlightText("human happiness");
+      cy.get("[data-cy=tooltip]").click();
+      cy.get('textarea').type('Another comment via cypress');
+      cy.get("[data-cy=saveFirstCommentButton]").click();
       // Close the comment thread
       cy.get("[data-cy=closeCommentsButton]");
       cy.get("[data-cy=closeCommentsButton]").click();
+     
 
       // Click on highlighted text
       cy.wait(1000);
       cy.get("span");
       cy.get("span").click();
 
-      // Check if the previously added 2 comments are loaded, then close this section
+      // Check if the previously added comment is loaded, then close this section
       cy.get('.card-text');
-      cy.get('.card-text').should('have.length', 2);
+      cy.get('.card-text').should('have.length', 1);
       cy.get("[data-cy=closeCommentsButton]").click();
 
       // Edit draft
